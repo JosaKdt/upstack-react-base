@@ -2,12 +2,15 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   ManyToOne,
+  ManyToMany,
+  JoinTable,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm'
 import { Promotion } from './Promotion'
 import { Formateur } from './Formateur'
 import { Matiere } from './Matiere'
+import { Etudiant } from './Etudiant'
 
 @Entity('espaces_pedagogiques')
 export class EspacePedagogique {
@@ -31,6 +34,14 @@ export class EspacePedagogique {
     { nullable: false }
   )
   formateur!: Formateur
+
+  @ManyToMany(() => Etudiant)
+  @JoinTable({
+    name: 'etudiants_espaces_pedagogiques',
+    joinColumn: { name: 'espacePedagogiqueId', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'etudiantId', referencedColumnName: 'id' }
+  })
+  etudiants!: Etudiant[]
 
   @CreateDateColumn()
   createdAt!: Date

@@ -4,7 +4,9 @@ import { Promotion } from '@/src/entities/Promotion'
 import { Formateur } from '@/src/entities/Formateur'
 import { Matiere } from '@/src/entities/Matiere'
 import { EspacePedagogique } from '@/src/entities/EspacePedagogique'
+import { Etudiant } from '@/src/entities/Etudiant'
 import { CreateEspacePedagogiqueInput } from '@/src/schemas/espace-pedagogique.schema'
+import { espacePedagogiqueRepository } from '../repositories/espace-pedagogique.repository'
 
 export async function createEspacePedagogique(
   input: CreateEspacePedagogiqueInput
@@ -17,7 +19,7 @@ export async function createEspacePedagogique(
   const matiereRepo = db.getRepository(Matiere)
   const espaceRepo = db.getRepository(EspacePedagogique)
 
-  // ⚠️ Pour l’instant : directeur hardcodé / simulé
+  // ⚠️ Pour l'instant : directeur hardcodé / simulé
   const directeur = await userRepo.findOne({
     where: { role: Role.DIRECTEUR_ETUDES },
   })
@@ -67,5 +69,91 @@ export async function createEspacePedagogique(
     formateur: {
       id: formateur.id,
     },
+  }
+}
+
+export async function listEspacesPedagogiques() {
+  return espacePedagogiqueRepository.findAll()
+}
+
+export async function assignFormateur(
+  espacePedagogiqueId: string,
+  formateurId: string
+) {
+  const db = await getDataSource()
+  
+  // Vérifier que l'espace pédagogique existe
+  const espaceRepo = db.getRepository(EspacePedagogique)
+  const espace = await espaceRepo.findOne({
+    where: { id: espacePedagogiqueId }
+  })
+  
+  if (!espace) {
+    throw new Error('ESPACE_NOT_FOUND')
+  }
+  
+  // Vérifier que le formateur existe
+  const formateurRepo = db.getRepository(Formateur)
+  const formateur = await formateurRepo.findOne({
+    where: { id: formateurId }
+  })
+  
+  if (!formateur) {
+    throw new Error('FORMATEUR_NOT_FOUND')
+  }
+  
+  // Affecter le formateur via le repository
+  await espacePedagogiqueRepository.assignFormateur(espacePedagogiqueId, formateurId)
+  
+  return {
+    success: true,
+    message: 'Formateur affecté avec succès'
+  }
+}
+
+export async function addEtudiantsFromPromotion(
+  espacePedagogiqueId: string,
+  promotionId: string
+) {
+  const db = await getDataSource()
+  
+  // Vérifier que l'espace pédagogique existe
+  const espaceRepo = db.getRepository(EspacePedagogique)
+  const espace = await espaceRepo.findOne({
+    where: { id: espacePedagogiqueId }
+  })
+  
+  if (!espace) {
+    throw new Error('ESPACE_NOT_FOUND')
+  }
+  
+  // Vérifier que la promotion existe
+  const promotionRepo = db.getRepository(Promotion)
+  const promotion = await promotionRepo.findOne({
+    where: { id: promotionId }
+  })
+  
+  if (!promotion) {
+    throw new Error('PROMOTION_NOT_FOUND')
+  }
+  
+  // Récupérer tous les étudiants de la promotion
+  const etudiantRepo = db.getRepository(Etudiant)
+  const etudiants = await etudiantRepo.find({
+    where: { promotion: { id: promotionId } }
+  })
+  
+  if (etudiants.length === 0) {
+    throw new Error('NO_STUDENTS_IN_PROMOTION')
+  }
+  
+  // Inscrire les étudiants via le repository
+  const etudiantIds = etudiants.map(e => e.id)
+  const result = await espacePedagogiqueRepository.addEtudiants(espacePedagogiqueId, etudiantIds)
+  
+  return {
+    success: true,
+    message: `${result.inscrits} étudiant(s) inscrit(s) avec succès`,
+    data: result
   }
 }

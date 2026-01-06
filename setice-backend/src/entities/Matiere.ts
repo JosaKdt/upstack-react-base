@@ -14,14 +14,13 @@ export class Matiere {
   @PrimaryGeneratedColumn('uuid')
   id!: string
 
-  @Column({ unique: true })
-  code!: string
+  @Column({ unique: true, nullable: true })  // ← AJOUTER nullable: true
+  code?: string  // ← AJOUTER ? pour optionnel
 
   @Column()
   libelle!: string
 
   @OneToMany(
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     () => require('./EspacePedagogique').EspacePedagogique,
     (espace: EspacePedagogique) => espace.matiere
   )

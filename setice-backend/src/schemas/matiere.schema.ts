@@ -1,8 +1,8 @@
 import { z } from 'zod'
 
 export const createMatiereSchema = z.object({
-  code: z.string().min(1),
-  libelle: z.string().min(1),
+  code: z.string().optional(),  // ← optionnel
+  libelle: z.string().min(1, 'Le libellé est requis')
 })
 
-export type CreateMatiereInput = z.infer<typeof createMatiereSchema>
+export type CreateMatiereDto = z.infer<typeof createMatiereSchema>
