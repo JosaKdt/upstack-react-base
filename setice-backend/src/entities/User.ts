@@ -35,6 +35,12 @@ export class User {
   })
   role!: Role
 
+  @Column({ nullable: true })
+  activationToken?: string
+
+  @Column({ type: 'timestamp', nullable: true })
+  activationTokenExpires?: Date
+
   // Mot de passe généré par le directeur
   @Column({ default: true })
   motDePasseTemporaire!: boolean
@@ -44,6 +50,5 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt!: Date
-  activationTokenExpires: Date | undefined
-  activationToken: string | undefined
+  
 }

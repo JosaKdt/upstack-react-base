@@ -2,25 +2,39 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/hooks/use-auth"
+import { Loader2 } from "lucide-react"
 
-export default function Home() {
+export default function HomePage() {
   const router = useRouter()
+  const { isAuthenticated, loading, user } = useAuth()
 
   useEffect(() => {
-    const token = localStorage.getItem("setice_token")
-    if (token) {
-      router.push("/dashboard")
-    } else {
-      router.push("/login")
+    if (!loading) {
+      if (isAuthenticated && user) {
+        // Redirect based on role
+        switch (user.role) {
+          case "FORMATEUR":
+            router.push("/formateur")
+            break
+          case "ETUDIANT":
+            router.push("/dashboard/etudiant")
+            break
+          case "DIRECTEUR_ETUDES":
+            router.push("/dashboard/directeur")
+            break
+          default:
+            router.push("/dashboard")
+        }
+      } else {
+        router.push("/login")
+      }
     }
-  }, [router])
+  }, [isAuthenticated, loading, user, router])
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-        <p className="text-sm text-muted-foreground">Chargement...</p>
-      </div>
+    <div className="min-h-screen flex items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
     </div>
   )
 }

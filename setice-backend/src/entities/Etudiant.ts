@@ -36,11 +36,6 @@ export class Etudiant {
   @Column({ unique: true })
   matricule!: string
 
-  @Column({ nullable: true })
-  activationToken?: string
-
-  @Column({ type: 'timestamp', nullable: true })
-  activationTokenExpires?: Date
   // ✅ RELATION INVERSE MANQUANTE
   @ManyToMany(
     () => EspacePedagogique,

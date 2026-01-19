@@ -5,6 +5,7 @@ export const createEtudiantSchema = z.object({
   prenom: z.string().min(1),
   email: z.string().email(),
   promotionId: z.string().uuid(),
+   temporaryPassword: z.string().min(6).optional(),
 })
 
 export type CreateEtudiantInput = z.infer<typeof createEtudiantSchema>

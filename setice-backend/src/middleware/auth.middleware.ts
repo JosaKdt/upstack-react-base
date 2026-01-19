@@ -1,8 +1,10 @@
+
 import jwt from 'jsonwebtoken'
 
 const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'super-secret-key'
 
 export interface JwtPayload {
+  id: string
   userId: string
   email: string
   role: string
@@ -33,7 +35,7 @@ export function requireAuth(req: Request) {
   return verifyToken(authHeader)
 }
 
-export function requireRole(req: Request, allowedRoles: string[]) {
+export function requireRole(req: Request, allowedRoles: string[]): JwtPayload {
   const user = requireAuth(req)
   
   if (!allowedRoles.includes(user.role)) {

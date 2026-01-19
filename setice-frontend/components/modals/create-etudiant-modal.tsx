@@ -29,6 +29,7 @@ export function CreateEtudiantModal({ open, onOpenChange }: CreateEtudiantModalP
     prenom: "",
     email: "",
     promotionId: "",
+    temporaryPassword: "",
   })
 
   const validate = () => {
@@ -64,7 +65,7 @@ export function CreateEtudiantModal({ open, onOpenChange }: CreateEtudiantModalP
       toast.success("Étudiant créé avec succès !")
       mutate()
       onOpenChange(false)
-      setFormData({ nom: "", prenom: "", email: "", promotionId: "" })
+      setFormData({ nom: "", prenom: "", email: "", promotionId: "", temporaryPassword: "" })
     } else {
       if (result.error?.toLowerCase().includes("email")) {
         setErrors({ email: "Cet email est déjà utilisé" })
@@ -154,6 +155,24 @@ export function CreateEtudiantModal({ open, onOpenChange }: CreateEtudiantModalP
               </p>
             )}
           </div>
+          {/* Mot de passe temporaire */}
+          <div className="space-y-2">
+            <Label htmlFor="temporaryPassword">
+              Mot de passe temporaire
+            </Label>
+            <Input
+             id="temporaryPassword"
+             type="password"
+             value={formData.temporaryPassword}
+             onChange={(e) => handleChange("temporaryPassword", e.target.value)}
+             placeholder="Laisser vide pour génération automatique"
+            />
+           <p className="text-xs text-muted-foreground">
+             Ce mot de passe sera envoyé par email à l’étudiant.  
+             S’il est vide, un mot de passe sécurisé sera généré automatiquement.
+           </p>
+         </div>
+
 
           
 

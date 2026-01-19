@@ -2,7 +2,7 @@
 
 import useSWR from "swr"
 import { api } from "@/lib/api"
-import type { EspacePedagogique, Formateur, Etudiant, Promotion, Matiere } from "@/types"
+import type { EspacePedagogique, Formateur, Etudiant, Promotion, Matiere , Travail} from "@/types"
 
 // SWR fetchers
 const fetchEspaces = async () => {
@@ -35,6 +35,11 @@ const fetchMatieres = async () => {
   return result.data
 }
 
+const fetchTravaux = async () => {
+  const result = await api.getTravaux() // ou api.getTravauxByFormateur(formateurId) si tu as l'endpoint
+  if (!result.success) throw new Error(result.error)
+  return result.data
+}
 export function useEspaces() {
   const { data, error, isLoading, mutate } = useSWR<EspacePedagogique[]>("espaces", fetchEspaces)
   return {
@@ -45,6 +50,15 @@ export function useEspaces() {
   }
 }
 
+export function useTravaux() {
+  const { data, error, isLoading, mutate } = useSWR("travaux", fetchTravaux)
+  return {
+    travaux: data ?? [],
+    isLoading,
+    isError: error,
+    mutate,
+  }
+}
 export function useFormateurs() {
   const { data, error, isLoading, mutate } = useSWR<Formateur[]>("formateurs", fetchFormateurs)
   return {
@@ -85,18 +99,39 @@ export function useMatieres() {
   }
 }
 
-export function useDashboardStats() {
+export function useDashboardStats(p0: { formateurId: string | undefined }) {
   const { espaces, isLoading: loadingEspaces } = useEspaces()
   const { formateurs, isLoading: loadingFormateurs } = useFormateurs()
   const { etudiants, isLoading: loadingEtudiants } = useEtudiants()
-
+  const { travaux, isLoading: loadingTravaux } = useTravaux()
   return {
     stats: {
       espacesCount: espaces.length,
       formateursCount: formateurs.length,
       etudiantsCount: etudiants.length,
+      travauxCount: travaux.length,
     },
     recentEspaces: espaces.slice(0, 5),
-    isLoading: loadingEspaces || loadingFormateurs || loadingEtudiants,
+    isLoading: loadingEspaces || loadingFormateurs || loadingEtudiants || loadingTravaux,
   }
+}
+export async function getEspacesByFormateur() {
+  const token = localStorage.getItem('token')
+  if (!token) throw new Error("Token manquant. Vous devez être connecté.")
+
+  const res = await fetch('http://localhost:3000/api/v1/formateurs/espaces', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  const result = await res.json()
+
+  if (!res.ok || !result.success) {
+    throw new Error(result.error || 'Erreur lors du chargement des espaces')
+  }
+
+  return result.data
 }

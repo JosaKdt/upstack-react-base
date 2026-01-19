@@ -36,7 +36,9 @@ export async function createEtudiant(input: CreateEtudiantInput) {
   }
 
   // 3️⃣ Mot de passe temporaire
-  const tempPassword = generateTemporaryPassword()
+  const tempPassword =
+  input.temporaryPassword?.trim() ||
+  generateTemporaryPassword()
   const hashedPassword = await hashPassword(tempPassword)
 
   // 4️⃣ Créer User
@@ -64,8 +66,18 @@ export async function createEtudiant(input: CreateEtudiantInput) {
   await userRepo.save(user)
 
    // Générer le matricule automatique
-  const etudiantsCount = await etudiantRepo.count({ where: { promotion } })
-  const matricule = generateMatricule(promotion.code, etudiantsCount+1)
+  // Générer un matricule unique
+let studentNumber = await etudiantRepo.count({ where: { promotion } }) + 1
+let matricule: string
+let existing: Etudiant | null = null
+
+do {
+  matricule = generateMatricule(promotion.code, studentNumber)
+  existing = await etudiantRepo.findOne({ where: { matricule } })
+  studentNumber++
+} while (existing)
+
+
 
   const etudiant = etudiantRepo.create({
     user,

@@ -13,7 +13,7 @@ import { toast } from "sonner"
 
 export default function LoginPage() {
   const router = useRouter()
-  const { login, isAuthenticated, loading: authLoading } = useAuth()
+  const { login, isAuthenticated, loading: authLoading, user } = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
@@ -21,10 +21,23 @@ export default function LoginPage() {
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (!authLoading && isAuthenticated) {
-      router.push("/dashboard")
+  if (!authLoading && isAuthenticated && user) {
+    // Redirection selon le rôle
+    switch (user.role) {
+      case "DIRECTEUR_ETUDES":
+        router.push("/dashboard")
+        break
+      case "FORMATEUR":
+        router.push("/formateur/travaux")
+        break
+      case "ETUDIANT":
+        router.push("/dashboard/etudiant")
+        break
+      default:
+        router.push("/login")
     }
-  }, [authLoading, isAuthenticated, router])
+  }
+}, [loading, isAuthenticated, user, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

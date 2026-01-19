@@ -11,6 +11,7 @@ import { Loader2, AlertCircle } from "lucide-react"
 import { toast } from "sonner"
 import { api } from "@/lib/api"
 import { useFormateurs } from "@/hooks/use-data"
+import { te } from "date-fns/locale"
 
 interface CreateFormateurModalProps {
   open: boolean
@@ -27,6 +28,7 @@ export function CreateFormateurModal({ open, onOpenChange }: CreateFormateurModa
     prenom: "",
     email: "",
     specialite: "",
+    temporaryPassword: "",
   })
 
   const validate = () => {
@@ -59,7 +61,7 @@ export function CreateFormateurModal({ open, onOpenChange }: CreateFormateurModa
       toast.success("Formateur créé avec succès !")
       mutate()
       onOpenChange(false)
-      setFormData({ nom: "", prenom: "", email: "", specialite: "" })
+      setFormData({ nom: "", prenom: "", email: "", specialite: "", temporaryPassword: "" })
     } else {
       if (result.error?.toLowerCase().includes("email")) {
         setErrors({ email: "Cet email est déjà utilisé" })
@@ -158,6 +160,25 @@ export function CreateFormateurModal({ open, onOpenChange }: CreateFormateurModa
               placeholder="Génie Logiciel"
             />
           </div>
+
+           {/* Mot de passe temporaire */}
+          <div className="space-y-2">
+            <Label htmlFor="temporaryPassword">
+              Mot de passe temporaire
+            </Label>
+            <Input
+             id="temporaryPassword"
+             type="password"
+             value={formData.temporaryPassword}
+             onChange={(e) => handleChange("temporaryPassword", e.target.value)}
+             placeholder="Laisser vide pour génération automatique"
+            />
+           <p className="text-xs text-muted-foreground">
+             Ce mot de passe sera envoyé par email à l’étudiant.  
+             S’il est vide, un mot de passe sécurisé sera généré automatiquement.
+           </p>
+         </div>
+
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>

@@ -1,5 +1,7 @@
 // Types TypeScript pour SETICE
 
+import { ReactNode } from "react"
+
 export interface User {
   id: string
   email: string
@@ -63,6 +65,7 @@ export interface Matiere {
 }
 
 export interface EspacePedagogique {
+  nom: ReactNode
   id: string
   annee: string
   promotion: Promotion
@@ -126,4 +129,151 @@ export interface AddEtudiantsData {
 export interface AddEtudiantsResponse {
   inscrits: number
   dejaInscrits: number
+}
+
+export type TypeTravail = "INDIVIDUEL" | "COLLECTIF"
+export type StatutTravail = "BROUILLON" | "PUBLIE" | "CLOTURE"
+export type StatutAssignation = "ASSIGNE" | "LIVRE" | "EVALUE"
+export interface Travail {
+  id: string
+  titre: string
+  consignes: string
+  type: TypeTravail
+  dateLimite: string
+  bareme: number
+  statut: StatutTravail
+  espacePedagogique: EspacePedagogique
+  formateur: User
+  createdAt: string
+}
+
+export interface Assignation {
+  id: string
+  travail: Travail
+  etudiant: Etudiant
+  formateur: User
+  statut: StatutAssignation
+  dateAssignation: string
+  dateLivraison?: string
+  evaluation?: Evaluation | null
+}
+
+export interface Evaluation {
+  id: string
+  assignation?: Assignation
+  assignationId?: string
+  note: number
+  points?: number
+  commentaire?: string
+  dateEvaluation: string
+  formateur?: {
+    nom: string
+    prenom: string
+  }
+  travail?: {
+    titre: string
+    bareme: number
+    type: TypeTravail
+  }
+  espace?: {
+    nom: string
+    matiere: string
+    promotion: string
+  }
+}
+
+export interface EtudiantEvaluationsResponse {
+  etudiant: {
+    id: string
+    nom: string
+    prenom: string
+    matricule: string
+  }
+  evaluations: Evaluation[]
+  stats: {
+    totalPoints: number
+    moyenneGenerale: number
+    nombreEvaluations: number
+  }
+}
+
+export interface ClassementEtudiant {
+  rang: number
+  etudiant: {
+    id: string
+    nom: string
+    prenom: string
+    matricule: string
+    email: string
+  }
+  totalPoints: number
+  nombreEvaluations: number
+  moyenneGenerale: number
+  meilleureNote: number
+  progression: string
+}
+
+export interface ClassementResponse {
+  promotion: {
+    id: string
+    nom: string
+    annee: string
+  }
+  classement: ClassementEtudiant[]
+  stats: {
+    totalEtudiants: number
+    moyennePromotion: number
+    meilleureMoyenne: number
+  }
+}
+
+export interface AssignationsListResponse {
+  travail: {
+    id: string
+    titre: string
+    type: TypeTravail
+    bareme: number
+    dateLimite: string
+  }
+  assignations: {
+    id: string
+    etudiant: Etudiant
+    statut: StatutAssignation
+    dateAssignation: string
+    dateLivraison?: string
+    evaluation?: {
+      id: string
+      note: number
+      points: number
+      dateEvaluation: string
+    } | null
+  }[]
+  total: number
+}
+
+export interface ApiResponse<T = unknown> {
+  success: boolean
+  data?: T
+  message?: string
+  error?: string
+}
+
+export interface CreateTravailData {
+  titre: string
+  consignes: string
+  type: TypeTravail
+  dateLimite: string
+  bareme: number
+  espacePedagogiqueId: string
+}
+
+export interface CreateAssignationData {
+  travailId: string
+  etudiantId: string
+}
+
+export interface CreateEvaluationData {
+  assignationId: string
+  note: number
+  commentaire?: string
 }

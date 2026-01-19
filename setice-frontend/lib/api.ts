@@ -14,11 +14,20 @@ import type {
   AssignFormateurData,
   AddEtudiantsData,
   AddEtudiantsResponse,
+  Travail,
+  AssignationsListResponse,
+  Evaluation,
+  CreateEvaluationData,
+  EtudiantEvaluationsResponse,
+  ClassementResponse,
+  CreateAssignationData,
 } from "@/types"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1"
 
 class ApiClient {
+  getTravaux: any
+  
   private getToken(): string | null {
     if (typeof window === "undefined") return null
     return localStorage.getItem("setice_token")
@@ -37,8 +46,12 @@ class ApiClient {
     }
 
     try {
+      console.log("➡️ API Request:", endpoint, config)
       const response = await fetch(`${API_URL}${endpoint}`, config)
+      console.log("⬅️ API Response status:", response.status, response)
       const data = await response.json()
+      
+      console.log("⬅️ API Response body:", data)
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -124,6 +137,14 @@ class ApiClient {
     return this.request<EspacePedagogique[]>("/espaces-pedagogique/list")
   }
 
+
+  async getEspacesByFormateur(): Promise<ApiResponse<EspacePedagogique[]>> {
+  return this.request<EspacePedagogique[]>(
+    "/formateurs/espaces"
+  )
+}
+
+
   async createEspace(data: CreateEspaceData): Promise<ApiResponse<EspacePedagogique>> {
     return this.request<EspacePedagogique>("/espaces-pedagogique/create", {
       method: "POST",
@@ -149,6 +170,68 @@ class ApiClient {
 async getEspaceById(id: string): Promise<ApiResponse<EspacePedagogique>> {
   return this.request<EspacePedagogique>(`/espaces-pedagogique/${id}`)
 }
+
+// Travaux
+async getTravauxByEspace(espaceId: string): Promise<ApiResponse<Travail[]>> {
+  return this.request<Travail[]>(`/travaux/create`)
+}
+
+async createTravail(data: {
+  titre: string
+  consignes: string
+  type: string
+  dateLimite: string
+  bareme: number
+  espacePedagogiqueId: string
+}): Promise<ApiResponse<Travail>> {
+  return this.request<Travail>("/travaux/create", {
+    method: "POST",
+    body: JSON.stringify(data),
+  })
+}
+
+// Assignations (US 6.1, 7.1)
+  async createAssignation(data: CreateAssignationData): Promise<ApiResponse<{
+    id: string
+    travail: { id: string; titre: string; dateLimite: string }
+    etudiant: { id: string; nom: string; prenom: string; email: string }
+    statut: string
+    dateAssignation: string
+  }>> {
+    return this.request("/assignations/create", {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
+  }
+   
+  async getTravailById(travailId: string): Promise<ApiResponse<Travail>> {
+    return this.request<Travail>(`/travaux/${travailId}`)
+  }
+
+  
+
+  async getAssignationsByTravail(travailId: string): Promise<ApiResponse<AssignationsListResponse>> {
+    return this.request<AssignationsListResponse>(`/assignations/list?travailId=${travailId}`)
+  }
+
+  // Evaluations (US 9.1)
+  async createEvaluation(data: CreateEvaluationData): Promise<ApiResponse<Evaluation>> {
+    return this.request<Evaluation>("/evaluations/create", {
+      method: "POST",
+      body: JSON.stringify(data),
+    })
+  }
+
+  // Étudiant (US 10.1)
+  async getEtudiantEvaluations(etudiantId: string): Promise<ApiResponse<EtudiantEvaluationsResponse>> {
+    return this.request<EtudiantEvaluationsResponse>(`/etudiants/${etudiantId}/evaluations`)
+  }
+
+  // Classement (US 11.1)
+  async getClassementPromotion(promotionId: string): Promise<ApiResponse<ClassementResponse>> {
+    return this.request<ClassementResponse>(`/classements/promotions/${promotionId}`)
+  }
+
 
 }
 

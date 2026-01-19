@@ -171,3 +171,20 @@ export async function getEspacePedagogique(id: string) {
 
   return espace
 }
+
+export async function listEspacesByFormateurUser(userId: string) {
+  const db = await getDataSource()
+  const espaceRepo = db.getRepository(EspacePedagogique)
+
+  return await espaceRepo
+    .createQueryBuilder('espace')
+    .leftJoinAndSelect('espace.formateur', 'formateur')
+    .leftJoinAndSelect('formateur.user', 'user')
+    .leftJoinAndSelect('espace.promotion', 'promotion')
+    .leftJoinAndSelect('espace.matiere', 'matiere')
+    .leftJoinAndSelect('espace.etudiants', 'etudiants')
+    .leftJoinAndSelect('etudiants.user', 'etudiantUser')
+    .where('user.id = :userId', { userId })
+    .orderBy('espace.createdAt', 'DESC')
+    .getMany()
+}

@@ -2,6 +2,9 @@ import { getDataSource } from '@/src/lib/db'
 import { User, Role } from '@/src/entities/User'
 import { Formateur } from '@/src/entities/Formateur'
 import { generateTemporaryPassword, hashPassword } from '@/src/lib/password'
+import jwt from 'jsonwebtoken'
+import { sendActivationEmail } from '@/src/lib/mail-form'
+
 
 export interface CreateFormateurInput {
   nom: string
@@ -41,6 +44,18 @@ export async function createFormateur(input: CreateFormateurInput) {
 
   await userRepo.save(user)
 
+
+  // 5️⃣ Générer le token d'activation JWT
+    const token = jwt.sign(
+      { userId: user.id },
+      process.env.JWT_SECRET!,
+      { expiresIn: '24h' }
+    )
+  
+    user.activationToken = token
+    user.activationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000)
+    await userRepo.save(user)
+
   // 4️⃣ Créer le Formateur lié au User
   const formateur = formateurRepo.create({
     user,
@@ -48,6 +63,7 @@ export async function createFormateur(input: CreateFormateurInput) {
   } as Partial<Formateur>)
 
   await formateurRepo.save(formateur)
+  await sendActivationEmail(user.email,  tempPassword, token)
 
   // 5️⃣ Retour utile (sans password)
   return {

@@ -27,16 +27,16 @@ export default function ActivatePage() {
 
     setIsLoading(true)
     try {
-      const res = await fetch(`http://localhost:3001/api/v1/activate`, {
+      const res = await fetch(`http://localhost:3001/api/v1/etudiants/activate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, password }),
+        body: JSON.stringify({ token, newPassword: password }),
       })
       const data = await res.json()
       if (!data.success) throw new Error(data.error)
 
       toast.success("Compte activé avec succès ! Vous pouvez vous connecter.")
-      router.push("/login")
+      window.location.href = "/login"
     } catch (err: any) {
       toast.error(err.message || "Erreur lors de l'activation")
     } finally {

@@ -6,9 +6,10 @@ import type { EspacePedagogique } from "@/types"
 interface RecentEspacesProps {
   espaces: EspacePedagogique[]
   isLoading?: boolean
+  onCreateTravail?: (espaceId: string) => void // ✅ Optionnel
 }
 
-export function RecentEspaces({ espaces, isLoading }: RecentEspacesProps) {
+export function RecentEspaces({ espaces, isLoading, onCreateTravail }: RecentEspacesProps) {
   if (isLoading) {
     return (
       <div className="rounded-lg border border-border bg-card">
@@ -54,23 +55,34 @@ export function RecentEspaces({ espaces, isLoading }: RecentEspacesProps) {
       </div>
       <div className="divide-y divide-border">
         {espaces.map((espace) => (
-          <Link
-            key={espace.id}
-            href={`/espaces/${espace.id}`}
-            className="block p-4 transition-colors duration-150 hover:bg-accent"
-          >
-            <h4 className="font-medium text-foreground">{espace.matiere.libelle}</h4>
-            <div className="mt-1 flex items-center gap-3 text-sm text-muted-foreground">
-              <span className="inline-flex items-center rounded bg-primary-light px-2 py-0.5 text-xs font-medium text-primary">
-                {espace.promotion.code}
-              </span>
-              <span>{espace.annee}</span>
-              <span className="flex items-center gap-1">
-                <Users className="h-3.5 w-3.5" />
-                {espace.etudiants?.length ?? 0}
-              </span>
-            </div>
-          </Link>
+          <div key={espace.id} className="flex items-center justify-between p-4 transition-colors duration-150 hover:bg-accent">
+            <Link
+              href={`/espaces/${espace.id}`}
+              className="block flex-1"
+            >
+              <h4 className="font-medium text-foreground">{espace.matiere.libelle}</h4>
+              <div className="mt-1 flex items-center gap-3 text-sm text-muted-foreground">
+                <span className="inline-flex items-center rounded bg-primary-light px-2 py-0.5 text-xs font-medium text-primary">
+                  {espace.promotion.code}
+                </span>
+                <span>{espace.annee}</span>
+                <span className="flex items-center gap-1">
+                  <Users className="h-3.5 w-3.5" />
+                  {espace.etudiants?.length ?? 0}
+                </span>
+              </div>
+            </Link>
+
+            {/* Bouton Créer Travail */}
+            {onCreateTravail && (
+            <button
+              onClick={() => onCreateTravail(espace.id)}
+              className="px-3 py-1 rounded bg-primary text-white text-sm hover:bg-primary-hover"
+            >
+              Créer travail
+            </button>
+          )}
+          </div>
         ))}
       </div>
     </div>
