@@ -1,12 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { Suspense, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "react-hot-toast"
 
-export default function ActivatePage() {
+// ✅ Composant qui utilise useSearchParams
+function ActivateForm() {
   const searchParams = useSearchParams()
   const token = searchParams.get("token") || ""
 
@@ -26,7 +27,8 @@ export default function ActivatePage() {
 
     setIsLoading(true)
     try {
-      const res = await fetch(`http://localhost:3001/api/v1/etudiants/activate`, {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
+      const res = await fetch(`${API_URL}/api/v1/etudiants/activate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, newPassword: password }),
@@ -40,11 +42,8 @@ export default function ActivatePage() {
 
       console.log("✅ Activation réussie")
       
-      // Afficher un message de succès
       toast.success("Compte activé avec succès !")
       
-      // ✅ SOLUTION ULTIME: Forcer le rechargement complet avec timestamp
-      // Cela empêche Next.js de servir la page depuis le cache
       setTimeout(() => {
         const loginUrl = `/login?activated=${Date.now()}`
         console.log("🚀 Redirection forcée vers:", loginUrl)
@@ -59,33 +58,53 @@ export default function ActivatePage() {
   }
 
   return (
+    <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
+      <h1 className="text-xl font-semibold mb-4">Activation du compte</h1>
+
+      <Input
+        type="password"
+        placeholder="Nouveau mot de passe"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        className="mb-3"
+        disabled={isLoading}
+        autoComplete="new-password"
+      />
+      <Input
+        type="password"
+        placeholder="Confirmer le mot de passe"
+        value={confirmPassword}
+        onChange={(e) => setConfirmPassword(e.target.value)}
+        className="mb-4"
+        disabled={isLoading}
+        autoComplete="new-password"
+      />
+
+      <Button onClick={handleActivate} disabled={isLoading} className="w-full">
+        {isLoading ? "Activation en cours..." : "Activer mon compte"}
+      </Button>
+    </div>
+  )
+}
+
+// ✅ Composant principal avec Suspense
+export default function ActivatePage() {
+  return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
-      <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
-        <h1 className="text-xl font-semibold mb-4">Activation du compte</h1>
-
-        <Input
-          type="password"
-          placeholder="Nouveau mot de passe"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="mb-3"
-          disabled={isLoading}
-          autoComplete="new-password"
-        />
-        <Input
-          type="password"
-          placeholder="Confirmer le mot de passe"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          className="mb-4"
-          disabled={isLoading}
-          autoComplete="new-password"
-        />
-
-        <Button onClick={handleActivate} disabled={isLoading} className="w-full">
-          {isLoading ? "Activation en cours..." : "Activer mon compte"}
-        </Button>
-      </div>
+      <Suspense 
+        fallback={
+          <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
+            <div className="animate-pulse">
+              <div className="h-6 bg-gray-200 rounded mb-4 w-3/4"></div>
+              <div className="h-10 bg-gray-200 rounded mb-3"></div>
+              <div className="h-10 bg-gray-200 rounded mb-4"></div>
+              <div className="h-10 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        }
+      >
+        <ActivateForm />
+      </Suspense>
     </div>
   )
 }
