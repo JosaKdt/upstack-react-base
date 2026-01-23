@@ -12,7 +12,7 @@ export async function OPTIONS() {
   return new Response(null, {
     status: 204,
     headers: {
-      "Access-Control-Allow-Origin": "http://localhost:3000",
+      "Access-Control-Allow-Origin": 'https://relaxed-selkie-3ef8a0.netlify.app',
       "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type,Authorization",
     },
@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
       {
         status: 200,
         headers: {
-          "Access-Control-Allow-Origin": "http://localhost:3000",
+          "Access-Control-Allow-Origin": 'https://relaxed-selkie-3ef8a0.netlify.app',
           "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
           "Access-Control-Allow-Headers": "Content-Type,Authorization",
         },
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
       {
         status: 500,
         headers: {
-          "Access-Control-Allow-Origin": "http://localhost:3000",
+          "Access-Control-Allow-Origin": 'https://relaxed-selkie-3ef8a0.netlify.app',
           "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
           "Access-Control-Allow-Headers": "Content-Type,Authorization",
         },
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
         {
           status: 401,
           headers: {
-            "Access-Control-Allow-Origin": "http://localhost:3000",
+            "Access-Control-Allow-Origin": 'https://relaxed-selkie-3ef8a0.netlify.app',
             "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
             "Access-Control-Allow-Headers": "Content-Type,Authorization",
           },
@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
       {
         status: 201,
         headers: {
-          "Access-Control-Allow-Origin": "http://localhost:3000",
+          "Access-Control-Allow-Origin": 'https://relaxed-selkie-3ef8a0.netlify.app',
           "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
           "Access-Control-Allow-Headers": "Content-Type,Authorization",
         },
@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
       {
         status,
         headers: {
-          "Access-Control-Allow-Origin": "http://localhost:3000",
+          "Access-Control-Allow-Origin": 'https://relaxed-selkie-3ef8a0.netlify.app',
           "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
           "Access-Control-Allow-Headers": "Content-Type,Authorization",
         },

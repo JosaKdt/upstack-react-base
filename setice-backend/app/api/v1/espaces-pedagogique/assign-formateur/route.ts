@@ -8,7 +8,7 @@ import { requireRole } from '@/src/middleware/auth.middleware'
 
 // 🔹 Headers CORS communs
 const corsHeaders = {
-  'Access-Control-Allow-Origin': 'http://localhost:3000',
+  'Access-Control-Allow-Origin': 'https://relaxed-selkie-3ef8a0.netlify.app',
   'Access-Control-Allow-Methods': 'POST,OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type,Authorization',
 }

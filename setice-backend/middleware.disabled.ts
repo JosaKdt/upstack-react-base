@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const ALLOWED_ORIGIN = 'http://localhost:3000'
+const ALLOWED_ORIGIN = 'https://relaxed-selkie-3ef8a0.netlify.app'
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
   'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
