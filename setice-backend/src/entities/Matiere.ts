@@ -6,7 +6,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm'
-import { EspacePedagogique } from './EspacePedagogique'
+import { EspacePedagogique } from './EspacePedagogique'  // ✅ Import normal
 
 @Entity('matieres')
 export class Matiere {
@@ -19,11 +19,7 @@ export class Matiere {
   @Column()
   libelle!: string
 
-  // ✅ REMPLACER le require() par une fonction fléchée normale
-  @OneToMany(
-    () => EspacePedagogique,
-    (espace) => espace.matiere
-  )
+  @OneToMany(() => EspacePedagogique, (espace) => espace.matiere)
   espacesPedagogiques!: EspacePedagogique[]
 
   @CreateDateColumn()

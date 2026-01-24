@@ -7,7 +7,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm'
-import { Promotion } from './Promotion'
+import { Promotion } from './Promotion'  // ✅ Import normal
 import { Formateur } from './Formateur'
 import { Matiere } from './Matiere'
 import { Etudiant } from './Etudiant'

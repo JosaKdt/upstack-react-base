@@ -6,6 +6,7 @@ import {
   JoinColumn,
   Column,
 } from 'typeorm'
+// ✅ Import normal pour utilisation dans les décorateurs
 import { Promotion } from './Promotion'
 import { User } from './User'
 import { EspacePedagogique } from './EspacePedagogique'
@@ -15,6 +16,7 @@ export class Etudiant {
   @PrimaryGeneratedColumn('uuid')
   id!: string
 
+  // ✅ La fonction fléchée () => évite la circularité
   @ManyToOne(
     () => Promotion,
     (promotion) => promotion.etudiants,
