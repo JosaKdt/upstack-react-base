@@ -34,7 +34,7 @@ export async function createEtudiant(input: CreateEtudiantInput) {
   }
 
   // 3️⃣ Mot de passe temporaire
-  const tempPassword = generateTemporaryPassword()
+  const tempPassword = input.temporaryPassword || generateTemporaryPassword()
   const hashedPassword = await hashPassword(tempPassword)
 
   // 4️⃣ Créer User
@@ -84,15 +84,17 @@ export async function createEtudiant(input: CreateEtudiantInput) {
   // 8️⃣ Envoyer l'email d'activation
   try {
     await sendActivationEmail(user.email, matricule, tempPassword, token)
+    console.log('✅ Email d\'activation envoyé à:', user.email)
   } catch (emailError) {
     console.error('❌ Erreur envoi email:', emailError)
+    // Ne pas bloquer la création si l'email échoue
   }
 
-  // ✅ Retourner un objet FLAT (pas d'objets imbriqués)
+  // ✅ 9️⃣ IMPORTANT : Retourner un objet FLAT
   return {
     id: etudiant.id,
     matricule: matricule,
-    // User fields
+    // User fields (flat, pas d'objet imbriqué)
     userId: user.id,
     nom: user.nom,
     prenom: user.prenom,
@@ -101,7 +103,7 @@ export async function createEtudiant(input: CreateEtudiantInput) {
     motDePasseTemporaire: true,
     temporaryPassword: tempPassword,
     activationToken: token,
-    // Promotion fields
+    // Promotion fields (flat, pas d'objet imbriqué)
     promotionId: promotion.id,
     promotionCode: promotion.code,
     promotionLibelle: promotion.libelle,
@@ -121,7 +123,7 @@ export async function getEtudiants() {
   return etudiants.map((e) => ({
     id: e.id,
     matricule: e.matricule,
-    // User fields
+    // User fields (flat)
     userId: e.user.id,
     nom: e.user.nom,
     prenom: e.user.prenom,
@@ -129,7 +131,7 @@ export async function getEtudiants() {
     role: e.user.role,
     motDePasseTemporaire: e.user.motDePasseTemporaire,
     actif: !e.user.motDePasseTemporaire && e.user.isActive,
-    // Promotion fields
+    // Promotion fields (flat)
     promotionId: e.promotion.id,
     promotionCode: e.promotion.code,
     promotionLibelle: e.promotion.libelle,

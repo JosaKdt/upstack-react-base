@@ -6,7 +6,7 @@ import {
   JoinColumn,
   Column,
 } from 'typeorm'
-import type { Promotion } from './Promotion'
+import { Promotion } from './Promotion' // ✅ Import direct
 import { User } from './User'
 import { EspacePedagogique } from './EspacePedagogique'
 
@@ -15,11 +15,10 @@ export class Etudiant {
   @PrimaryGeneratedColumn('uuid')
   id!: string
 
-  // L'étudiant appartient à UNE promotion
+  // ✅ Supprimé require(), utilisé fonction fléchée
   @ManyToOne(
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    () => require('./Promotion').Promotion,
-    (promotion: Promotion) => promotion.etudiants,
+    () => Promotion,
+    (promotion) => promotion.etudiants,
     {
       nullable: false,
       onDelete: 'RESTRICT',
@@ -28,15 +27,14 @@ export class Etudiant {
   @JoinColumn()
   promotion!: Promotion
 
-  // L'étudiant est un user
-  @ManyToOne(() => User, {  onDelete: 'CASCADE' })
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn()
   user!: User
 
   @Column({ unique: true })
   matricule!: string
 
-  // ✅ RELATION INVERSE MANQUANTE
+  // ✅ Relation inverse pour les espaces pédagogiques
   @ManyToMany(
     () => EspacePedagogique,
     (espace) => espace.etudiants
