@@ -14,7 +14,6 @@ async function getUserFromToken(req: NextRequest) {
   return jwt.verify(token, JWT_SECRET) as any
 }
 
-// ✅ GET /api/v1/travaux/list-by-formateur
 export async function GET(req: NextRequest) {
   try {
     const user = await getUserFromToken(req)
@@ -31,14 +30,12 @@ export async function GET(req: NextRequest) {
     const db = await getDataSource()
     const travailRepo = db.getRepository(Travail)
 
-    // Construire la requête
     const queryBuilder = travailRepo
       .createQueryBuilder('travail')
       .leftJoinAndSelect('travail.espacePedagogique', 'espace')
       .leftJoinAndSelect('travail.formateur', 'formateur')
       .where('formateur.id = :formateurId', { formateurId: user.id })
 
-    // Filtrer par espace si spécifié
     if (espaceId) {
       queryBuilder.andWhere('espace.id = :espaceId', { espaceId })
     }
@@ -47,7 +44,6 @@ export async function GET(req: NextRequest) {
 
     const travaux = await queryBuilder.getMany()
 
-    // Pour chaque travail, récupérer les statistiques d'assignation
     const travauxWithStats = await Promise.all(
       travaux.map(async (travail) => {
         const assignationRepo = db.getRepository(Assignation)

@@ -8,24 +8,11 @@ import { Role } from '@/src/entities/User'
 
 const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'super-secret-key'
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': 'https://relaxed-selkie-3ef8a0.netlify.app',
-  'Access-Control-Allow-Methods': 'POST,OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
-
-export async function OPTIONS() {
-  console.log('✅ OPTIONS /api/v1/assignations/create called')
-  return new Response(null, { status: 204, headers: CORS_HEADERS })
-}
-
 function getUser(req: NextRequest) {
   const auth = req.headers.get('authorization')
   if (!auth?.startsWith('Bearer ')) throw new Error('UNAUTHORIZED')
   return jwt.verify(auth.split(' ')[1], JWT_SECRET) as any
 }
-
-// app/api/v1/assignations/create/route.ts
 
 export async function POST(req: NextRequest) {
   console.log('🟢 POST /api/v1/assignations/create called')
@@ -39,7 +26,7 @@ export async function POST(req: NextRequest) {
       console.log('❌ FORBIDDEN: User is not FORMATEUR')
       return NextResponse.json(
         { success: false, error: 'FORBIDDEN' },
-        { status: 403, headers: CORS_HEADERS }
+        { status: 403 }
       )
     }
 
@@ -53,7 +40,7 @@ export async function POST(req: NextRequest) {
       console.log('❌ MISSING_FIELDS:', { travailId, etudiantId })
       return NextResponse.json(
         { success: false, error: 'MISSING_FIELDS' },
-        { status: 400, headers: CORS_HEADERS }
+        { status: 400 }
       )
     }
 
@@ -77,20 +64,19 @@ export async function POST(req: NextRequest) {
     const assignation = await assignTravail({
       travail,
       etudiant,
-      formateur: travail.formateur, // ✅ Utilisez le formateur du travail
+      formateur: travail.formateur,
     })
     console.log('✅ Assignation created:', assignation.id)
 
     return NextResponse.json(
-      { success: true, data: assignation },
-      { headers: CORS_HEADERS }
+      { success: true, data: assignation }
     )
   } catch (err: any) {
     console.error('❌ CREATE ASSIGNATION ERROR:', err)
     console.error('Stack trace:', err.stack)
     return NextResponse.json(
       { success: false, error: err.message },
-      { status: 400, headers: CORS_HEADERS }
+      { status: 400 }
     )
   }
 }

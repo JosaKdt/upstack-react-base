@@ -3,20 +3,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getDataSource } from '@/src/lib/db'
 import { EspacePedagogique } from '@/src/entities/EspacePedagogique'
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': 'https://relaxed-selkie-3ef8a0.netlify.app',
-  'Access-Control-Allow-Methods': 'GET,OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
-
-export async function OPTIONS() {
-  return new Response(null, { status: 204, headers: CORS_HEADERS })
-}
-
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url)
-    const id = url.pathname.split('/').pop() // Récupère l'id depuis l'URL
+    const id = url.pathname.split('/').pop()
     const db = await getDataSource()
     const repo = db.getRepository(EspacePedagogique)
     const espace = await repo.findOne({
@@ -25,12 +15,12 @@ export async function GET(req: NextRequest) {
     })
 
     if (!espace) {
-      return NextResponse.json({ success: false, error: 'ESPACE_NOT_FOUND' }, { status: 404, headers: CORS_HEADERS })
+      return NextResponse.json({ success: false, error: 'ESPACE_NOT_FOUND' }, { status: 404 })
     }
 
-    return NextResponse.json({ success: true, data: espace }, { headers: CORS_HEADERS })
+    return NextResponse.json({ success: true, data: espace })
   } catch (err: any) {
     console.error('GET ESPACE ERROR:', err)
-    return NextResponse.json({ success: false, error: err.message }, { status: 500, headers: CORS_HEADERS })
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 })
   }
 }

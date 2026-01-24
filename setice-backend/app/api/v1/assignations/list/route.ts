@@ -1,18 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server'
 import { assignationRepository } from '@/src/repositories/assignation.repository'
-import { validate as isUuid } from 'uuid'  // npm install uuid
-
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin':'https://relaxed-selkie-3ef8a0.netlify.app',
-  'Access-Control-Allow-Methods': 'GET,OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
-
-// Pré-flight CORS
-export async function OPTIONS() {
-  return new Response(null, { status: 204, headers: CORS_HEADERS })
-}
+import { validate as isUuid } from 'uuid'
 
 // GET /api/v1/assignations/list?travailId=xxx
 export async function GET(req: NextRequest) {
@@ -24,7 +13,7 @@ export async function GET(req: NextRequest) {
     if (!travailId) {
       return NextResponse.json(
         { success: false, error: 'TRAVAIL_ID_REQUIRED' },
-        { status: 400, headers: CORS_HEADERS }
+        { status: 400 }
       )
     }
 
@@ -32,7 +21,7 @@ export async function GET(req: NextRequest) {
     if (!isUuid(travailId)) {
       return NextResponse.json(
         { success: false, error: 'INVALID_UUID' },
-        { status: 400, headers: CORS_HEADERS }
+        { status: 400 }
       )
     }
 
@@ -41,14 +30,13 @@ export async function GET(req: NextRequest) {
 
     // 4️⃣ Retourne le nombre total et les assignations
     return NextResponse.json(
-      { success: true, data: { total: assignations.length, assignations } },
-      { headers: CORS_HEADERS }
+      { success: true, data: { total: assignations.length, assignations } }
     )
   } catch (err: any) {
     console.error('GET ASSIGNATIONS BY TRAVAIL ERROR:', err)
     return NextResponse.json(
       { success: false, error: err.message },
-      { status: 500, headers: CORS_HEADERS }
+      { status: 500 }
     )
   }
 }

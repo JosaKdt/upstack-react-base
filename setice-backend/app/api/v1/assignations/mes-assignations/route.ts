@@ -1,4 +1,3 @@
-// app/api/v1/assignations/mes-assignations/route.ts
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
@@ -6,17 +5,6 @@ import { listAssignationsByEtudiant } from '@/src/services/assignation.service'
 import { Role } from '@/src/entities/User'
 
 const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'super-secret-key'
-
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': 'https://relaxed-selkie-3ef8a0.netlify.app',
-  'Access-Control-Allow-Methods': 'GET,OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
-
-export async function OPTIONS() {
-  console.log('✅ OPTIONS /api/v1/assignations/mes-assignations called')
-  return new Response(null, { status: 204, headers: CORS_HEADERS })
-}
 
 function getUser(req: NextRequest) {
   const auth = req.headers.get('authorization')
@@ -36,7 +24,7 @@ export async function GET(req: NextRequest) {
       console.log('❌ FORBIDDEN: User is not ETUDIANT')
       return NextResponse.json(
         { success: false, error: 'FORBIDDEN' },
-        { status: 403, headers: CORS_HEADERS }
+        { status: 403 }
       )
     }
 
@@ -45,15 +33,16 @@ export async function GET(req: NextRequest) {
     console.log('✅ Assignations fetched:', assignations.length)
 
     return NextResponse.json(
-      { success: true, data: assignations },
-      { headers: CORS_HEADERS }
+      { success: true, data: assignations }
     )
   } catch (err: any) {
     console.error('❌ FETCH ASSIGNATIONS ERROR:', err)
     console.error('Stack trace:', err.stack)
     return NextResponse.json(
       { success: false, error: err.message },
-      { status: 400, headers: CORS_HEADERS }
+      { status: 400 }
     )
   }
 }
+
+export const runtime = 'nodejs'

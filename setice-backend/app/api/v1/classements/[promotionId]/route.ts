@@ -1,20 +1,9 @@
-// app/api/v1/classements/[promotionId]/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import { Role } from '@/src/entities/User'
 import { getClassementPromotion } from '@/src/services/classement.service'
 
 const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'super-secret-key'
-
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': 'https://relaxed-selkie-3ef8a0.netlify.app',
-  'Access-Control-Allow-Methods': 'GET,OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
-
-export async function OPTIONS() {
-  return new Response(null, { status: 204, headers: CORS_HEADERS })
-}
 
 function getUser(req: NextRequest) {
   const auth = req.headers.get('authorization')
@@ -30,18 +19,16 @@ export async function GET(
   console.log('🟢 GET /api/v1/classements/[promotionId] called')
 
   try {
-    // Extract user
     const user = getUser(req)
     console.log('✅ User:', user.email, '- Role:', user.role)
 
     if (user.role !== Role.DIRECTEUR_ETUDES) {
       return NextResponse.json(
         { success: false, error: 'FORBIDDEN' },
-        { status: 403, headers: CORS_HEADERS }
+        { status: 403 }
       )
     }
 
-    // Extract promotionId
     let promotionId: string
     if (context.params instanceof Promise) {
       const params = await context.params
@@ -55,15 +42,14 @@ export async function GET(
     console.log('✅ Classement calculé:', result.classement.length, 'étudiants')
 
     return NextResponse.json(
-      { success: true, data: result },
-      { headers: CORS_HEADERS }
+      { success: true, data: result }
     )
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     console.error('❌ GET CLASSEMENT PROMOTION ERROR:', err)
     return NextResponse.json(
       { success: false, error: err.message },
-      { status: 500, headers: CORS_HEADERS }
+      { status: 500 }
     )
   }
 }

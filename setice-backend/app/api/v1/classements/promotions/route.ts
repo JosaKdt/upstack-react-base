@@ -1,21 +1,9 @@
-// app/api/v1/classements/promotions/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
 import { Role } from '@/src/entities/User'
 import { getClassementPromotions } from '@/src/services/classement.service'
 
 const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'super-secret-key'
-
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': 'https://relaxed-selkie-3ef8a0.netlify.app',
-  'Access-Control-Allow-Methods': 'GET,OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
-
-export async function OPTIONS() {
-  console.log('✅ OPTIONS /api/v1/classements/promotions called')
-  return new Response(null, { status: 204, headers: CORS_HEADERS })
-}
 
 function getUser(req: NextRequest) {
   const auth = req.headers.get('authorization')
@@ -32,12 +20,11 @@ export async function GET(req: NextRequest) {
     const user = getUser(req)
     console.log('✅ User:', user.email, '- Role:', user.role)
 
-    // Seul le directeur peut voir le classement des promotions
     if (user.role !== Role.DIRECTEUR_ETUDES) {
       console.log('❌ FORBIDDEN: User is not DIRECTEUR_ETUDES')
       return NextResponse.json(
         { success: false, error: 'FORBIDDEN' },
-        { status: 403, headers: CORS_HEADERS }
+        { status: 403 }
       )
     }
 
@@ -46,8 +33,7 @@ export async function GET(req: NextRequest) {
     console.log('✅ Classement calculé:', classement.length, 'promotions')
 
     return NextResponse.json(
-      { success: true, data: classement },
-      { headers: CORS_HEADERS }
+      { success: true, data: classement }
     )
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
@@ -55,7 +41,7 @@ export async function GET(req: NextRequest) {
     console.error('Stack trace:', err.stack)
     return NextResponse.json(
       { success: false, error: err.message },
-      { status: 500, headers: CORS_HEADERS }
+      { status: 500 }
     )
   }
 }

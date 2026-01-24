@@ -1,4 +1,3 @@
-// app/api/auth/logout/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 
@@ -6,10 +5,8 @@ export async function POST(req: NextRequest) {
   console.log("🚪 [API LOGOUT] Début de la déconnexion côté serveur")
   
   try {
-    // Supprimer tous les cookies d'authentification
     const cookieStore = cookies()
     
-    // Liste des cookies potentiels à supprimer
     const authCookies = [
       'token',
       'auth_token',
@@ -35,13 +32,12 @@ export async function POST(req: NextRequest) {
       { status: 200 }
     )
     
-    // S'assurer que les cookies sont bien supprimés dans la réponse
     authCookies.forEach(cookieName => {
       response.cookies.set(cookieName, '', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 0, // Expire immédiatement
+        maxAge: 0,
         path: '/',
       })
     })
@@ -55,16 +51,4 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     )
   }
-}
-
-// Permettre OPTIONS pour CORS
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    },
-  })
 }

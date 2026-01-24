@@ -6,23 +6,6 @@ import { evaluateTravail } from '@/src/services/evaluation.service'
 
 const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'super-secret-key'
 
-// ✅ CORS HEADERS (UNE SEULE SOURCE DE VÉRITÉ)
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': 'https://relaxed-selkie-3ef8a0.netlify.app',
-  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
-
-// ✅ PRE-FLIGHT (OBLIGATOIRE)
-export async function OPTIONS() {
-  console.log("🔵 [API] OPTIONS /api/v1/evaluations/create - Preflight CORS")
-  return new Response(null, {
-    status: 204,
-    headers: CORS_HEADERS,
-  })
-}
-
-// 🔐 Récupérer l'utilisateur depuis le token
 async function getUserFromToken(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
 
@@ -34,7 +17,6 @@ async function getUserFromToken(req: NextRequest) {
   return jwt.verify(token, JWT_SECRET) as any
 }
 
-// ✅ POST /api/v1/evaluations/create
 export async function POST(req: NextRequest) {
   try {
     console.log("")
@@ -49,7 +31,7 @@ export async function POST(req: NextRequest) {
       console.error("❌ [API] FORBIDDEN - L'utilisateur n'est pas formateur")
       return NextResponse.json(
         { success: false, error: 'FORBIDDEN: Seuls les formateurs peuvent évaluer' },
-        { status: 403, headers: CORS_HEADERS }
+        { status: 403 }
       )
     }
 
@@ -68,7 +50,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       { success: true, data: evaluation },
-      { status: 201, headers: CORS_HEADERS }
+      { status: 201 }
     )
   } catch (err: any) {
     console.error("❌ [API] EVALUATE TRAVAIL ERROR:", err)
@@ -76,12 +58,11 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       { success: false, error: err.message || 'Erreur lors de la création de l\'évaluation' },
-      { status: 400, headers: CORS_HEADERS }
+      { status: 400 }
     )
   }
 }
 
-// ✅ GET /api/v1/evaluations/create?assignationId=xxx (si nécessaire)
 export async function GET(req: NextRequest) {
   try {
     console.log("")
@@ -98,7 +79,7 @@ export async function GET(req: NextRequest) {
       console.error("❌ [API] ASSIGNATION_ID_REQUIRED")
       return NextResponse.json(
         { success: false, error: 'ASSIGNATION_ID_REQUIRED' },
-        { status: 400, headers: CORS_HEADERS }
+        { status: 400 }
       )
     }
 
@@ -109,13 +90,13 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(
       { success: true, data: evaluations },
-      { status: 200, headers: CORS_HEADERS }
+      { status: 200 }
     )
   } catch (err: any) {
     console.error("❌ [API] GET EVALUATIONS ERROR:", err)
     return NextResponse.json(
       { success: false, error: err.message },
-      { status: 500, headers: CORS_HEADERS }
+      { status: 500 }
     )
   }
 }

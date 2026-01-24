@@ -6,9 +6,9 @@ export function middleware(request: NextRequest) {
   
   // Liste des origines autorisées
   const allowedOrigins = [
-    'https://heroic-brioche-c5b494.netlify.app',      // Production
-    'https://relaxed-selkie-3ef8a0.netlify.app',     // Preview
-    'http://localhost:3000',                          // Dev local
+    'https://heroic-brioche-c5b494.netlify.app',
+    'https://relaxed-selkie-3ef8a0.netlify.app',
+    'http://localhost:3000',
     'http://localhost:3001',
   ]
 

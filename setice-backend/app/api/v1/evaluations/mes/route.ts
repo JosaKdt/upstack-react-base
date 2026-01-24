@@ -6,23 +6,11 @@ import { evaluationRepository } from '@/src/repositories/evaluation.repository'
 
 const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'super-secret-key'
 
-// Headers CORS
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': 'https://relaxed-selkie-3ef8a0.netlify.app',
-  'Access-Control-Allow-Methods': 'GET,OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-}
-
 async function getUserFromToken(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
   if (!authHeader?.startsWith('Bearer ')) throw new Error('Unauthorized')
   const token = authHeader.split(' ')[1]
   return jwt.verify(token, JWT_SECRET) as any
-}
-
-// Pré-flight OPTIONS
-export async function OPTIONS() {
-  return new Response(null, { status: 204, headers: CORS_HEADERS })
 }
 
 export async function GET(req: NextRequest) {
@@ -32,7 +20,7 @@ export async function GET(req: NextRequest) {
     if (user.role !== 'ETUDIANT') {
       return NextResponse.json(
         { success: false, error: 'FORBIDDEN' },
-        { status: 403, headers: CORS_HEADERS }
+        { status: 403 }
       )
     }
 
@@ -48,14 +36,13 @@ export async function GET(req: NextRequest) {
     const allEvaluations = evaluations.flat()
 
     return NextResponse.json(
-      { success: true, data: allEvaluations },
-      { headers: CORS_HEADERS }
+      { success: true, data: allEvaluations }
     )
   } catch (err: any) {
     console.error('GET MES EVALUATIONS ERROR:', err)
     return NextResponse.json(
       { success: false, error: err.message },
-      { status: 500, headers: CORS_HEADERS }
+      { status: 500 }
     )
   }
 }

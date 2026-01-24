@@ -7,37 +7,24 @@ import { addEtudiantsFromPromotion, getEspacePedagogique } from '@/src/services/
 import { addEtudiantsSchema } from '@/src/schemas/add-etudiants.schema'
 import { requireRole } from '@/src/middleware/auth.middleware'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': 'https://relaxed-selkie-3ef8a0.netlify.app',
-  'Access-Control-Allow-Methods': 'POST,OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type,Authorization',
-}
-
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 204,
-    headers: corsHeaders,
-  })
-}
-
 export async function POST(req: NextRequest) {
   try {
-    console.log('🔵 ADD ETUDIANTS - Début') // ✅ LOG
+    console.log('🔵 ADD ETUDIANTS - Début')
     
     requireRole(req, ['DIRECTEUR_ETUDES', 'FORMATEUR'])
-    console.log('🔵 ADD ETUDIANTS - Auth OK') // ✅ LOG
+    console.log('🔵 ADD ETUDIANTS - Auth OK')
 
     const body = await req.json()
-    console.log('🔵 ADD ETUDIANTS - Body reçu:', body) // ✅ LOG
+    console.log('🔵 ADD ETUDIANTS - Body reçu:', body)
 
     const data = addEtudiantsSchema.parse(body)
-    console.log('🔵 ADD ETUDIANTS - Validation OK:', data) // ✅ LOG
+    console.log('🔵 ADD ETUDIANTS - Validation OK:', data)
 
     const result = await addEtudiantsFromPromotion(
       data.espacePedagogiqueId,
       data.promotionId
     )
-    console.log('🔵 ADD ETUDIANTS - Résultat:', result) // ✅ LOG
+    console.log('🔵 ADD ETUDIANTS - Résultat:', result)
 
     return NextResponse.json(
       {
@@ -45,15 +32,12 @@ export async function POST(req: NextRequest) {
         message: result.message,
         data: result.data,
       },
-      {
-        status: 200,
-        headers: corsHeaders,
-      }
+      { status: 200 }
     )
   } catch (e: any) {
-    console.error('❌ ADD ETUDIANTS ERROR:', e) // ✅ LOG
-    console.error('❌ Error message:', e.message) // ✅ LOG
-    console.error('❌ Error name:', e.name) // ✅ LOG
+    console.error('❌ ADD ETUDIANTS ERROR:', e)
+    console.error('❌ Error message:', e.message)
+    console.error('❌ Error name:', e.name)
     
     let status = 400
     let error = e.message
@@ -83,7 +67,6 @@ export async function POST(req: NextRequest) {
       error = 'Promotion introuvable'
     }
     
-    // ✅ AJOUT pour la validation de promotion
     if (e.message?.includes('PROMOTION_MISMATCH')) {
       status = 400
       error = e.message
@@ -101,10 +84,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       { success: false, error },
-      {
-        status,
-        headers: corsHeaders,
-      }
+      { status }
     )
   }
 }
