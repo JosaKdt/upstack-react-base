@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
 
     console.log('USER ID:', user.id)
     console.log('Espaces trouvés:', espaces.length)
-    espaces.forEach(e => console.log(e.id, e.formateur.user.id))
+    espaces.forEach((e: { id: any; formateur: { user: { id: any } } }) => console.log(e.id, e.formateur.user.id))
 
     return NextResponse.json(
       { success: true, data: espaces },

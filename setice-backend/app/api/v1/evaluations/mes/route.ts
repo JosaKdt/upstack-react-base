@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
     const assignations = await assignationRepository.listByEtudiant(user.id)
 
     const evaluations = await Promise.all(
-      assignations.map(async (assign) => {
+      assignations.map(async (assign: { id: string }) => {
         const evals = await evaluationRepository.listByAssignation(assign.id)
         return evals
       })
