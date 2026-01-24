@@ -27,7 +27,7 @@ function ActivateForm() {
 
     setIsLoading(true)
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://upstack-react-base.onrender.com/api/v1"
       const res = await fetch(`${API_URL}/api/v1/etudiants/activate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

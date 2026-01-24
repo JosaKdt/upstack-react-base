@@ -10,7 +10,7 @@ const nextConfig = {
     return [
       {
         source: '/api/backend/:path*',
-        destination: 'http://localhost:3001/api/:path*',
+        destination: 'https://upstack-react-base.onrender.com/api/v1/:path*',
       },
     ]
   },

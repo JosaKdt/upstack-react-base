@@ -15,7 +15,7 @@ export function useMatieres() {
 
     try {
       const token = localStorage.getItem("token") // si tu utilises JWT côté frontend
-      const res = await fetch("http://localhost:3001/api/v1/matieres/create", {
+      const res = await fetch("https://upstack-react-base.onrender.com/api/v1/matieres/create", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

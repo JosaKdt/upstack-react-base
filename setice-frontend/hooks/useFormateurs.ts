@@ -12,7 +12,7 @@ export function useFormateurs() {
     setIsLoading(true)
     setError(null)
     try {
-      const res = await fetch("http://localhost:3001/api/v1/formateurs")
+      const res = await fetch("https://upstack-react-base.onrender.com/api/v1/formateurs  ")
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Impossible de récupérer les formateurs")
       setFormateurs(data.data || [])

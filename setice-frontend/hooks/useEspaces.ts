@@ -17,7 +17,7 @@ export function useEspace(id: string) {
 
     try {
       const token = localStorage.getItem("setice_token")
-      const res = await fetch(`http://localhost:3001/api/v1/espaces-pedagogique/${id}`, {
+      const res = await fetch(`https://upstack-react-base.onrender.com/api/v1/espaces-pedagogique/${id}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

@@ -14,7 +14,7 @@ export function useEtudiants() {
 
     try {
       const token = localStorage.getItem("token") // ou ton gestionnaire JWT
-      const res = await fetch("http://localhost:3001/api/v1/etudiants/create", {
+      const res = await fetch("https://upstack-react-base.onrender.com/api/v1/etudiants/create", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
