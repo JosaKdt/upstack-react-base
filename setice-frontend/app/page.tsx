@@ -21,7 +21,7 @@ export default function HomePage() {
             router.push("/etudiant")
             break
           case "DIRECTEUR_ETUDES":
-            router.push("/dashboard/directeur")
+            router.push("/dashboard")
             break
           default:
             router.push("/dashboard")

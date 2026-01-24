@@ -31,7 +31,7 @@ export default function LoginPage() {
           router.push("/formateur/travaux")
           break
         case "ETUDIANT":
-          router.push("/dashboard/etudiant")
+          router.push("/etudiant")
           break
         default:
           router.push("/login")
