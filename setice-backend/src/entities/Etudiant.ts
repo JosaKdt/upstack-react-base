@@ -6,7 +6,7 @@ import {
   JoinColumn,
   Column,
 } from 'typeorm'
-import { Promotion } from './Promotion' // ✅ Import direct
+import { Promotion } from './Promotion'
 import { User } from './User'
 import { EspacePedagogique } from './EspacePedagogique'
 
@@ -15,7 +15,6 @@ export class Etudiant {
   @PrimaryGeneratedColumn('uuid')
   id!: string
 
-  // ✅ Supprimé require(), utilisé fonction fléchée
   @ManyToOne(
     () => Promotion,
     (promotion) => promotion.etudiants,
@@ -34,10 +33,6 @@ export class Etudiant {
   @Column({ unique: true })
   matricule!: string
 
-  // ✅ Relation inverse pour les espaces pédagogiques
-  @ManyToMany(
-    () => EspacePedagogique,
-    (espace) => espace.etudiants
-  )
+  @ManyToMany(() => EspacePedagogique, (espace) => espace.etudiants)
   espacesPedagogiques!: EspacePedagogique[]
 }

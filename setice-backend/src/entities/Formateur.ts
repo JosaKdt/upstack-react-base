@@ -15,7 +15,6 @@ export class Formateur {
   @Column({ type: 'varchar', nullable: true })
   specialite: string | null = null
 
-  // Un formateur = un user
   @OneToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn()
   user!: User

@@ -6,7 +6,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm'
-import { Etudiant } from './Etudiant' // ✅ Import direct
+import { Etudiant } from './Etudiant'
 
 @Entity('promotions')
 export class Promotion {
@@ -22,11 +22,7 @@ export class Promotion {
   @Column()
   annee!: string
 
-  // ✅ Supprimé require(), utilisé fonction fléchée
-  @OneToMany(
-    () => Etudiant,
-    (etudiant) => etudiant.promotion
-  )
+  @OneToMany(() => Etudiant, (etudiant) => etudiant.promotion)
   etudiants!: Etudiant[]
 
   @CreateDateColumn()

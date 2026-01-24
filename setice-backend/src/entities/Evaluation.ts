@@ -1,4 +1,3 @@
-// src/entities/Evaluation.ts
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -21,7 +20,7 @@ export class Evaluation {
   assignation!: Assignation
 
   @ManyToOne(() => User, { eager: true })
-  formateur!: User // celui qui évalue
+  formateur!: User
 
   @Column('float')
   note!: number

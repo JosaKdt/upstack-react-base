@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -7,23 +6,23 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm'
-
-import type { EspacePedagogique } from './EspacePedagogique'
+import { EspacePedagogique } from './EspacePedagogique'
 
 @Entity('matieres')
 export class Matiere {
   @PrimaryGeneratedColumn('uuid')
   id!: string
 
-  @Column({ unique: true, nullable: true })  // ← AJOUTER nullable: true
-  code?: string  // ← AJOUTER ? pour optionnel
+  @Column({ unique: true, nullable: true })
+  code?: string
 
   @Column()
   libelle!: string
 
+  // ✅ REMPLACER le require() par une fonction fléchée normale
   @OneToMany(
-    () => require('./EspacePedagogique').EspacePedagogique,
-    (espace: EspacePedagogique) => espace.matiere
+    () => EspacePedagogique,
+    (espace) => espace.matiere
   )
   espacesPedagogiques!: EspacePedagogique[]
 

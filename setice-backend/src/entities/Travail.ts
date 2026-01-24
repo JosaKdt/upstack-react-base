@@ -1,4 +1,3 @@
-// src/entities/Travail.ts
 import {
   Entity,
   PrimaryGeneratedColumn,

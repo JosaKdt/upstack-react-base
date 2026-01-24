@@ -41,15 +41,15 @@ export class User {
   @Column({ type: 'timestamp', nullable: true })
   activationTokenExpires?: Date
 
-  // Mot de passe généré par le directeur
   @Column({ default: true })
   motDePasseTemporaire!: boolean
+
+  @Column({ default: false })  // ✅ Ajout du décorateur manquant
+  isActive!: boolean
 
   @CreateDateColumn()
   createdAt!: Date
 
   @UpdateDateColumn()
   updatedAt!: Date
-  isActive: boolean
-  
 }

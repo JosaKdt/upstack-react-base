@@ -1,4 +1,3 @@
-// src/entities/Assignation.ts
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -30,7 +29,7 @@ export class Assignation {
   etudiant!: Etudiant
 
   @ManyToOne(() => User, { eager: true })
-  formateur!: User // celui qui assigne
+  formateur!: User
 
   @Column({
     type: 'enum',
@@ -40,12 +39,8 @@ export class Assignation {
   statut!: StatutAssignation
 
   @Column({ type: 'timestamp', nullable: true })
-  dateLivraison?: Date // pour US 8.1
+  dateLivraison?: Date
 
   @CreateDateColumn()
   createdAt!: Date
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    dateAssignation: any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    evaluation: any
 }

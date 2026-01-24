@@ -17,22 +17,13 @@ export class EspacePedagogique {
   @PrimaryGeneratedColumn('uuid')
   id!: string
 
-  @ManyToOne(
-    () => Promotion,
-    { nullable: false }
-  )
+  @ManyToOne(() => Promotion, { nullable: false })
   promotion!: Promotion
 
-  @ManyToOne(
-    () => Matiere,
-    { nullable: false }
-  )
+  @ManyToOne(() => Matiere, { nullable: false })
   matiere!: Matiere
 
-  @ManyToOne(
-    () => Formateur,
-    { nullable: false }
-  )
+  @ManyToOne(() => Formateur, { nullable: false })
   formateur!: Formateur
 
   @ManyToMany(() => Etudiant, { eager: false })
