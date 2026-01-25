@@ -16,18 +16,32 @@ function ActivateForm() {
   const [isLoading, setIsLoading] = useState(false)
 
   const handleActivate = async () => {
+    // Validation
+    if (!token) {
+      toast.error("Token d'activation manquant")
+      return
+    }
+
     if (!password || !confirmPassword) {
       toast.error("Veuillez remplir tous les champs")
       return
     }
+
     if (password !== confirmPassword) {
       toast.error("Les mots de passe ne correspondent pas")
       return
     }
 
+    if (password.length < 8) {
+      toast.error("Le mot de passe doit contenir au moins 8 caractères")
+      return
+    }
+
     setIsLoading(true)
+
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://upstack-react-base.onrender.com/api/v1"
+      
       const res = await fetch(`${API_URL}/etudiants/activate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -41,7 +55,6 @@ function ActivateForm() {
       }
 
       console.log("✅ Activation réussie")
-      
       toast.success("Compte activé avec succès !")
       
       setTimeout(() => {
@@ -57,6 +70,21 @@ function ActivateForm() {
     }
   }
 
+  // Vérifier si le token est présent
+  if (!token) {
+    return (
+      <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
+        <h1 className="text-xl font-semibold mb-4 text-red-600">
+          Lien d'activation invalide
+        </h1>
+        <p className="text-gray-600">
+          Le lien d'activation est manquant ou invalide. 
+          Veuillez vérifier votre email.
+        </p>
+      </div>
+    )
+  }
+
   return (
     <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
       <h1 className="text-xl font-semibold mb-4">Activation du compte</h1>
@@ -70,9 +98,10 @@ function ActivateForm() {
         disabled={isLoading}
         autoComplete="new-password"
       />
+
       <Input
         type="password"
-        placeholder="Confirmer votre  passe"
+        placeholder="Confirmer votre mot de passe"
         value={confirmPassword}
         onChange={(e) => setConfirmPassword(e.target.value)}
         className="mb-4"
@@ -80,7 +109,11 @@ function ActivateForm() {
         autoComplete="new-password"
       />
 
-      <Button onClick={handleActivate} disabled={isLoading} className="w-full">
+      <Button 
+        onClick={handleActivate} 
+        disabled={isLoading} 
+        className="w-full"
+      >
         {isLoading ? "Activation en cours..." : "Activer mon compte"}
       </Button>
     </div>

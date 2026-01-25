@@ -5,7 +5,7 @@ import { getDataSource } from "@/src/lib/db"
 import { User } from "@/src/entities/User"
 import { hashPassword } from "@/src/lib/password"
 
-const JWT_SECRET = process.env.JWT_SECRET!
+const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key'
 
 interface ActivatePayload {
   userId: string
@@ -20,44 +20,53 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
-   console.log("📥 [ACTIVATE] Body complet:", JSON.stringify(body, null, 2))
-    console.log("📥 [ACTIVATE] Type de token:", typeof body.token)
-    console.log("📥 [ACTIVATE] Token:", body.token)
-    console.log("📥 [ACTIVATE] Token length:", body.token?.length)
-    console.log("📥 [ACTIVATE] Premier caractère du token:", body.token?.[0])
-
-
-
-    const { token, newPassword } = body as { token: string; newPassword?: string }
-
-    // ✅ AJOUTEZ CES LOGS
     console.log("📥 [ACTIVATE] Body reçu:", { 
-      hasToken: !!token, 
-      tokenLength: token?.length,
-      tokenPreview: token?.substring(0, 50) + '...',
-      hasNewPassword: !!newPassword 
+      hasToken: !!body.token, 
+      tokenLength: body.token?.length,
+      tokenPreview: body.token?.substring(0, 20) + '...',
+      hasNewPassword: !!body.newPassword 
     })
 
+    const { token, newPassword } = body as { token: string; newPassword: string }
+
+    // ✅ Vérification des champs obligatoires
     if (!token) {
-      return NextResponse.json({ success: false, error: "Token manquant" }, { status: 400 })
+      console.log("❌ [ACTIVATE] Token manquant")
+      return NextResponse.json(
+        { success: false, error: "Token manquant" }, 
+        { status: 400 }
+      )
     }
 
-    // ✅ Vérification du token
+    if (!newPassword) {
+      console.log("❌ [ACTIVATE] Nouveau mot de passe manquant")
+      return NextResponse.json(
+        { success: false, error: "Nouveau mot de passe requis" }, 
+        { status: 400 }
+      )
+    }
+
+    // ✅ Vérification du token JWT
     let payload: ActivatePayload
     try {
-      console.log("🔐 [ACTIVATE] JWT_SECRET présent?", !!JWT_SECRET)
+      console.log("🔐 [ACTIVATE] Vérification du JWT...")
       payload = jwt.verify(token, JWT_SECRET) as ActivatePayload
       console.log("✅ [ACTIVATE] Token valide - userId:", payload.userId)
     } catch (err: any) {
       console.error("❌ [ACTIVATE] Token invalide:", err.message)
-      console.error("❌ [ACTIVATE] Token reçu:", token) // Voir le token complet
-      return NextResponse.json({ success: false, error: "Token invalide ou expiré" }, { status: 401 })
+      return NextResponse.json(
+        { success: false, error: "Token invalide ou expiré" }, 
+        { status: 401 }
+      )
     }
-    // ... reste du code
 
     // ✅ Vérifier que c'est bien un token d'activation
     if (payload.type !== 'activation') {
-      return NextResponse.json({ success: false, error: "Type de token invalide" }, { status: 401 })
+      console.log("❌ [ACTIVATE] Type de token invalide:", payload.type)
+      return NextResponse.json(
+        { success: false, error: "Type de token invalide" }, 
+        { status: 401 }
+      )
     }
 
     // ✅ Recherche de l'utilisateur
@@ -66,30 +75,35 @@ export async function POST(req: NextRequest) {
     const user = await userRepo.findOne({ where: { id: payload.userId } })
 
     if (!user) {
-      return NextResponse.json({ success: false, error: "Utilisateur introuvable" }, { status: 404 })
+      console.log("❌ [ACTIVATE] Utilisateur introuvable:", payload.userId)
+      return NextResponse.json(
+        { success: false, error: "Utilisateur introuvable" }, 
+        { status: 404 }
+      )
     }
+
+    console.log("👤 [ACTIVATE] Utilisateur trouvé:", user.email)
 
     // ✅ Vérifier que le compte n'est pas déjà activé
     if (user.isActive && !user.motDePasseTemporaire) {
+      console.log("⚠️ [ACTIVATE] Compte déjà activé")
       return NextResponse.json({ 
         success: false, 
         error: "Le compte est déjà activé" 
       }, { status: 400 })
     }
 
-    // ✅ Activer le compte
-    if (newPassword) {
-      // Si un nouveau mot de passe est fourni, on le change
-      const hashedPassword = await hashPassword(newPassword)
-      user.password = hashedPassword
-    }
+    // ✅ Hacher le nouveau mot de passe
+    const hashedPassword = await hashPassword(newPassword)
     
+    // ✅ Activer le compte et mettre à jour le mot de passe
+    user.password = hashedPassword
     user.motDePasseTemporaire = false
     user.isActive = true
-    
-    
-    
+    user.activationToken = undefined  // ✅ undefined au lieu de null
+    user.activationTokenExpires = undefined
     await userRepo.save(user)
+    
     console.log("✅ [ACTIVATE] Compte activé avec succès pour:", user.email)
 
     return NextResponse.json({ 
@@ -99,6 +113,9 @@ export async function POST(req: NextRequest) {
 
   } catch (err: any) {
     console.error("💥 [ACTIVATE] Erreur:", err)
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 })
+    return NextResponse.json(
+      { success: false, error: "Erreur serveur" }, 
+      { status: 500 }
+    )
   }
 }
