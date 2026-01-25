@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server"
 import jwt from "jsonwebtoken"
 import { getDataSource } from "@/src/lib/db"
 import { User } from "@/src/entities/User"
 import { hashPassword } from "@/src/lib/password"
+import { sendActivationEmail } from "@/src/lib/mail"
 
 const JWT_SECRET = process.env.NEXTAUTH_SECRET || "super-secret-key"
 
@@ -20,83 +22,54 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
-    console.log("📥 [ACTIVATE] Body reçu:", { hasToken: !!body.token, hasPassword: !!body.newPassword })
-    
     const { token, newPassword } = body as { token: string; newPassword: string }
 
     if (!token || !newPassword) {
-      console.log("❌ [ACTIVATE] Données manquantes")
-      return NextResponse.json(
-        { success: false, error: "Missing token or new password" },
-        { status: 400 }
-      )
+      return NextResponse.json({ success: false, error: "Missing token or new password" }, { status: 400 })
     }
 
-    console.log("🔐 [ACTIVATE] Vérification du token JWT...")
+    // Vérification du token
     let payload: ActivatePayload
     try {
       payload = jwt.verify(token, JWT_SECRET) as ActivatePayload
       console.log("✅ [ACTIVATE] Token valide - userId:", payload.userId)
     } catch (err) {
-      console.error("❌ [ACTIVATE] Token invalide:", err)
-      return NextResponse.json(
-        { success: false, error: "Token invalide ou expiré" },
-        { status: 401 }
-      )
+      return NextResponse.json({ success: false, error: "Token invalide ou expiré" }, { status: 401 })
     }
 
-    console.log("🔍 [ACTIVATE] Recherche utilisateur...")
+    // Recherche de l’utilisateur
     const db = await getDataSource()
     const userRepo = db.getRepository(User)
-
     const user = await userRepo.findOne({ where: { id: payload.userId } })
-    
-    if (!user) {
-      console.error("❌ [ACTIVATE] Utilisateur introuvable:", payload.userId)
-      return NextResponse.json(
-        { success: false, error: "Utilisateur introuvable" },
-        { status: 404 }
-      )
-    }
 
-    console.log("✅ [ACTIVATE] Utilisateur trouvé:", user.email)
+    if (!user) {
+      return NextResponse.json({ success: false, error: "Utilisateur introuvable" }, { status: 404 })
+    }
 
     if (!user.motDePasseTemporaire) {
-      console.log("⚠️ [ACTIVATE] Compte déjà activé")
-      return NextResponse.json(
-        { success: false, error: "Le compte est déjà activé" },
-        { status: 400 }
-      )
+      return NextResponse.json({ success: false, error: "Le compte est déjà activé" }, { status: 400 })
     }
 
-    console.log("🔒 [ACTIVATE] Hashage du nouveau mot de passe...")
+    // Hash du nouveau mot de passe
     const hashedPassword = await hashPassword(newPassword)
-    
-    console.log("💾 [ACTIVATE] Mise à jour du compte...")
     user.password = hashedPassword
     user.motDePasseTemporaire = false
     user.isActive = true
     await userRepo.save(user)
-
     console.log("✅ [ACTIVATE] Compte activé avec succès!")
-    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-    console.log("")
 
-    return NextResponse.json(
-      { success: true, message: "Compte activé avec succès, mot de passe mis à jour !" },
-      { status: 200 }
-    )
+    // --- Envoi de l’email via SendGrid ---
+    try {
+      await sendActivationEmail(user.email, payload.temporaryPassword, token)
+    } catch (err: any) {
+      console.error("❌ [ACTIVATE] Impossible d’envoyer l’email:", err.message || err)
+      // On ne bloque pas l’activation même si l’email échoue
+    }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return NextResponse.json({ success: true, message: "Compte activé avec succès, email envoyé !" }, { status: 200 })
+
   } catch (err: any) {
-    console.error("")
     console.error("💥 [ACTIVATE] Erreur:", err)
-    console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-    console.error("")
-    
-    return NextResponse.json(
-      { success: false, error: err.message },
-      { status: 500 }
-    )
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 })
   }
 }
