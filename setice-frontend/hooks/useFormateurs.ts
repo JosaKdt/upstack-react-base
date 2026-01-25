@@ -12,12 +12,27 @@ export function useFormateurs() {
     setIsLoading(true)
     setError(null)
     try {
-      const res = await fetch("https://upstack-react-base.onrender.com/api/v1/formateurs  ")
+      // ✅ Enlevez les espaces à la fin de l'URL
+      const res = await fetch("https://upstack-react-base.onrender.com/api/v1/formateurs")
+      
+      if (!res.ok) {
+        throw new Error(`Erreur HTTP: ${res.status}`)
+      }
+
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || "Impossible de récupérer les formateurs")
-      setFormateurs(data.data || [])
+      
+      console.log("📦 Réponse API complète:", data)
+      console.log("📋 Formateurs:", data.data)
+      
+      // ✅ La réponse est { success: true, data: [...] }
+      if (data.success && Array.isArray(data.data)) {
+        setFormateurs(data.data)
+      } else {
+        throw new Error("Format de données invalide")
+      }
     } catch (err: any) {
-      setError(err.message)
+      console.error("❌ Erreur fetch formateurs:", err)
+      setError(err.message || "Erreur lors du chargement des formateurs")
     } finally {
       setIsLoading(false)
     }
