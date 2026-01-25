@@ -36,7 +36,7 @@ export default function ActivatePage() {
         style={{ width: "100%", marginBottom: 10 }}
       />
       <button onClick={handleActivate} style={{ width: "100%" }}>
-        Activer le compte
+        Activer votre compte
       </button>
       {message && <p style={{ marginTop: 10 }}>{message}</p>}
     </div>
