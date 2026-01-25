@@ -52,7 +52,7 @@ export async function createFormateur(input: CreateFormateurInput) {
   // 4️⃣ Générer le token d'activation JWT
   const token = jwt.sign(
     { userId: user.id },
-    process.env.JWT_SECRET || 'super-secret-key',
+    process.env.JWT_SECRET || 'super-secret-key-setice-universite',
     { expiresIn: '24h' }
   )
 

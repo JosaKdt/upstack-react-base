@@ -2,7 +2,7 @@ import { userRepository } from '../repositories/user.repository'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 
-const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'super-secret-key'
+const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'super-secret-key-setice-universite'
 const JWT_EXPIRES_IN = '24h'
 
 export interface LoginResult {

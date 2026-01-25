@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 import { listAssignationsByEtudiant } from '@/src/services/assignation.service'
 import { Role } from '@/src/entities/User'
 
-const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'super-secret-key'
+const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'super-secret-key-setice-universite'
 
 function getUser(req: NextRequest) {
   const auth = req.headers.get('authorization')

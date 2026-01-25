@@ -6,7 +6,7 @@ import jwt from 'jsonwebtoken'
 import { createEtudiant, getEtudiants } from '@/src/services/etudiant.service'
 import { createEtudiantSchema } from '@/src/schemas/etudiant.schema'
 
-const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'super-secret-key'
+const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'super-secret-key-setice-universite'
 
 export async function GET(req: NextRequest) {
   try {

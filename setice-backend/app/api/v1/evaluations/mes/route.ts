@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken'
 import { assignationRepository } from '@/src/repositories/assignation.repository'
 import { evaluationRepository } from '@/src/repositories/evaluation.repository'
 
-const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'super-secret-key'
+const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'super-secret-key-setice-universite'
 
 async function getUserFromToken(req: NextRequest) {
   const authHeader = req.headers.get('authorization')
