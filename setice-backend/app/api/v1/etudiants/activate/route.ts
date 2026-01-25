@@ -5,7 +5,7 @@ import { getDataSource } from "@/src/lib/db"
 import { User } from "@/src/entities/User"
 import { hashPassword } from "@/src/lib/password"
 
-const JWT_SECRET = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || 'super-secret-key'
+const JWT_SECRET = process.env.JWT_SECRET!
 
 interface ActivatePayload {
   userId: string
@@ -22,6 +22,14 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { token, newPassword } = body as { token: string; newPassword?: string }
 
+    // ✅ AJOUTEZ CES LOGS
+    console.log("📥 [ACTIVATE] Body reçu:", { 
+      hasToken: !!token, 
+      tokenLength: token?.length,
+      tokenPreview: token?.substring(0, 50) + '...',
+      hasNewPassword: !!newPassword 
+    })
+
     if (!token) {
       return NextResponse.json({ success: false, error: "Token manquant" }, { status: 400 })
     }
@@ -29,12 +37,15 @@ export async function POST(req: NextRequest) {
     // ✅ Vérification du token
     let payload: ActivatePayload
     try {
+      console.log("🔐 [ACTIVATE] JWT_SECRET présent?", !!JWT_SECRET)
       payload = jwt.verify(token, JWT_SECRET) as ActivatePayload
       console.log("✅ [ACTIVATE] Token valide - userId:", payload.userId)
     } catch (err: any) {
       console.error("❌ [ACTIVATE] Token invalide:", err.message)
+      console.error("❌ [ACTIVATE] Token reçu:", token) // Voir le token complet
       return NextResponse.json({ success: false, error: "Token invalide ou expiré" }, { status: 401 })
     }
+    // ... reste du code
 
     // ✅ Vérifier que c'est bien un token d'activation
     if (payload.type !== 'activation') {

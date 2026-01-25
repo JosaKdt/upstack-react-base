@@ -60,19 +60,23 @@ export async function createEtudiant(input: CreateEtudiantInput) {
   await userRepo.save(user)
 
   // 5️⃣ Générer le token d'activation JWT
-  console.log('🔐 [SERVICE] Génération token avec secret:', JWT_SECRET.substring(0, 10) + '...')
-  
-  const token = jwt.sign(
-    { 
-      userId: user.id,
-      type: 'activation' // ✅ Ajoutez un type
-    },
-    JWT_SECRET, // ✅ Utilisez la constante
-    { expiresIn: '24h' }
-  )
+  // Dans etudiant.service.ts, ligne ~50
 
-  console.log('✅ [SERVICE] Token généré:', token.substring(0, 30) + '...')
+// ✅ Vérifiez que JWT_SECRET est bien défini
+console.log('🔐 [SERVICE] JWT_SECRET présent?', !!JWT_SECRET)
+console.log('🔐 [SERVICE] JWT_SECRET preview:', JWT_SECRET?.substring(0, 10) + '...')
 
+const token = jwt.sign(
+  { 
+    userId: user.id,
+    type: 'activation'
+  },
+  JWT_SECRET,
+  { expiresIn: '24h' }
+)
+
+console.log('✅ [SERVICE] Token généré (preview):', token.substring(0, 50) + '...')
+console.log('✅ [SERVICE] Token complet length:', token.length)
   user.activationToken = token
   user.activationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000)
   await userRepo.save(user)
