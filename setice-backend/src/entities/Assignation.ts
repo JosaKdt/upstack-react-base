@@ -7,9 +7,9 @@ import {
   CreateDateColumn,
   Unique,
 } from 'typeorm'
-import type { Travail } from './Travail'
-import type { Etudiant } from './Etudiant'
-import type { User } from './User'
+import { Travail } from './Travail'
+import { Etudiant } from './Etudiant'
+import { User } from './User'
 
 export enum StatutAssignation {
   ASSIGNE = 'ASSIGNE',

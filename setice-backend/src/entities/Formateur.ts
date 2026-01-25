@@ -1,4 +1,3 @@
-// Formateur.ts
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -6,7 +5,7 @@ import {
   JoinColumn,
   Column,
 } from 'typeorm'
-import type { User } from './User'
+import { User } from './User'
 
 @Entity('formateurs')
 export class Formateur {

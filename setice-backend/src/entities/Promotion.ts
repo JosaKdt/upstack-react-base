@@ -1,4 +1,3 @@
-// Promotion.ts
 console.log('🟡 [PROMOTION] 1. Début chargement Promotion.ts')
 
 import {
@@ -12,9 +11,9 @@ import {
 
 console.log('🟡 [PROMOTION] 2. TypeORM importé avec succès')
 
-import type { Etudiant } from './Etudiant'
+import { Etudiant } from './Etudiant'  // ✅ Import normal
 
-console.log('🟡 [PROMOTION] 3. Type Etudiant importé avec succès')
+console.log('🟡 [PROMOTION] 3. Etudiant importé avec succès')
 
 @Entity('promotions')
 export class Promotion {
@@ -30,7 +29,7 @@ export class Promotion {
   @Column()
   annee!: string
 
-  @OneToMany(() => Etudiant, (etudiant) => etudiant.promotion)
+  @OneToMany(() => Etudiant, (etudiant) => etudiant.promotion)  // ✅ Fonction fléchée
   etudiants!: Etudiant[]
 
   @CreateDateColumn()
