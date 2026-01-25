@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { api } from "@/lib/api" // ou l'endroit où vous exportez votre client API
 import type { Etudiant } from "@/types"
 
 export function useEtudiants() {
@@ -13,27 +14,27 @@ export function useEtudiants() {
     setError(null)
 
     try {
-      const token = localStorage.getItem("token") // ou ton gestionnaire JWT
-      const res = await fetch("https://upstack-react-base.onrender.com/api/v1/etudiants/create", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": token ? `Bearer ${token}` : "",
-        },
-      })
-
-      if (!res.ok) throw new Error("Impossible de récupérer les étudiants")
-
-      const data = await res.json()
-      setEtudiants(data.data || [])
+      // ✅ Utiliser votre client API qui gère déjà le token
+      const response = await api.getEtudiants()
+      
+      if (!response.success) {
+        throw new Error(response.error || "Impossible de récupérer les étudiants")
+      }
+      
+      const validEtudiants = (response.data || []).filter(
+        (e: any) => e?.user?.prenom && e?.user?.nom
+      )
+      
+      setEtudiants(validEtudiants)
     } catch (err: any) {
+      console.error("Erreur lors de la récupération des étudiants:", err)
       setError(err.message)
+      setEtudiants([])
     } finally {
       setIsLoading(false)
     }
   }, [])
 
-  // fetch au montage du composant
   useEffect(() => {
     fetchEtudiants()
   }, [fetchEtudiants])
