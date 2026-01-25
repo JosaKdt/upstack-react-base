@@ -1,15 +1,24 @@
-import { getDataSource } from '@/src/lib/db'
-import { User, Role } from '@/src/entities/User'
+// src/services/etudiant.service.ts
+import { getDataSource } from '@/src/lib/db' // ✅ Changez aussi ça
+import {  Role } from '@/src/entities/User'
 import { Etudiant } from '@/src/entities/Etudiant'
-import { Promotion } from '@/src/entities/Promotion'
 import { generateTemporaryPassword, hashPassword } from '@/src/lib/password'
 import { CreateEtudiantInput } from '@/src/schemas/etudiant.schema'
 import { generateMatricule } from '../lib/etudiant.utils'
 import jwt from 'jsonwebtoken'
 import { sendActivationEmail } from '@/src/lib/mail'
 
+// ✅ IMPORTANT : Utilisez NEXTAUTH_SECRET (pas JWT_SECRET)
+const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'super-secret-key'
+
+// src/services/etudiant.service.ts
+
 export async function createEtudiant(input: CreateEtudiantInput) {
   const db = await getDataSource()
+
+  const { User } = await import('@/src/entities/User')
+  const { Etudiant } = await import('@/src/entities/Etudiant')
+  const { Promotion } = await import('@/src/entities/Promotion')
 
   const userRepo = db.getRepository(User)
   const etudiantRepo = db.getRepository(Etudiant)
@@ -50,18 +59,26 @@ export async function createEtudiant(input: CreateEtudiantInput) {
 
   await userRepo.save(user)
 
-  // 5️⃣ Générer le token d'activation JWT
+  // 5️⃣ ✅ GÉNÉRER LE TOKEN ICI (AVANT de l'utiliser !)
+  console.log('🔐 [SERVICE] Génération token avec secret:', JWT_SECRET.substring(0, 10) + '...')
+  
   const token = jwt.sign(
-    { userId: user.id },
-    process.env.JWT_SECRET || 'super-secret-key',
+    { 
+      userId: user.id,
+      type: 'activation'
+    },
+    JWT_SECRET,
     { expiresIn: '24h' }
   )
 
+  console.log('✅ [SERVICE] Token généré:', token.substring(0, 30) + '...')
+
+  // 6️⃣ Sauvegarder le token dans la BDD
   user.activationToken = token
   user.activationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000)
   await userRepo.save(user)
 
-  // 6️⃣ Générer un matricule unique
+  // 7️⃣ Générer un matricule unique
   let studentNumber = await etudiantRepo.count({ where: { promotion } }) + 1
   let matricule: string
   let existing: Etudiant | null = null
@@ -72,7 +89,7 @@ export async function createEtudiant(input: CreateEtudiantInput) {
     studentNumber++
   } while (existing)
 
-  // 7️⃣ Créer l'étudiant
+  // 8️⃣ Créer l'étudiant
   const etudiant = etudiantRepo.create({
     user,
     promotion,
@@ -81,20 +98,19 @@ export async function createEtudiant(input: CreateEtudiantInput) {
   
   await etudiantRepo.save(etudiant)
 
-  // 8️⃣ Envoyer l'email d'activation
+  // 9️⃣ ✅ MAINTENANT vous pouvez envoyer l'email (token existe maintenant)
   try {
     await sendActivationEmail(user.email, matricule, tempPassword, token)
-    console.log('✅ Email d\'activation envoyé à:', user.email)
+    console.log('✅ [SERVICE] Email d\'activation envoyé à:', user.email)
   } catch (emailError) {
-    console.error('❌ Erreur envoi email:', emailError)
+    console.error('❌ [SERVICE] Erreur envoi email:', emailError)
     // Ne pas bloquer la création si l'email échoue
   }
 
-  // ✅ 9️⃣ IMPORTANT : Retourner un objet FLAT
+  // 🔟 Retourner un objet FLAT
   return {
     id: etudiant.id,
     matricule: matricule,
-    // User fields (flat, pas d'objet imbriqué)
     userId: user.id,
     nom: user.nom,
     prenom: user.prenom,
@@ -103,41 +119,9 @@ export async function createEtudiant(input: CreateEtudiantInput) {
     motDePasseTemporaire: true,
     temporaryPassword: tempPassword,
     activationToken: token,
-    // Promotion fields (flat, pas d'objet imbriqué)
     promotionId: promotion.id,
     promotionCode: promotion.code,
     promotionLibelle: promotion.libelle,
     promotionAnnee: promotion.annee,
   }
-}
-
-export async function getEtudiants() {
-  const db = await getDataSource()
-  const etudiantRepo = db.getRepository(Etudiant)
-
-  const etudiants = await etudiantRepo.find({
-    relations: ['user', 'promotion'],
-  })
-
-  // ✅ Retourner un tableau d'objets FLAT
-  return etudiants.map((e) => ({
-    id: e.id,
-    matricule: e.matricule,
-    // User fields (flat)
-    userId: e.user.id,
-    nom: e.user.nom,
-    prenom: e.user.prenom,
-    email: e.user.email,
-    role: e.user.role,
-    motDePasseTemporaire: e.user.motDePasseTemporaire,
-    actif: !e.user.motDePasseTemporaire && e.user.isActive,
-    // Promotion fields (flat)
-    promotionId: e.promotion.id,
-    promotionCode: e.promotion.code,
-    promotionLibelle: e.promotion.libelle,
-    promotionAnnee: e.promotion.annee,
-    // Dates
-    createdAt: e.user.createdAt.toISOString(),
-    updatedAt: e.user.updatedAt.toISOString(),
-  }))
 }
