@@ -49,7 +49,7 @@ function ActivateForm() {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://upstack-react-base.onrender.com/api/v1"
       
-      const res = await fetch(`${API_URL}/etudiants/activate`, {
+      const res = await fetch(`${API_URL}/activate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, newPassword: password }),
