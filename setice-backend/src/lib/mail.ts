@@ -20,7 +20,7 @@ export async function sendActivationEmail(
   console.log('   - activationToken length:', activationToken.length)
   console.log('   - activationToken commence par eyJ?:', activationToken.startsWith('eyJ'))
   
-  const frontendUrl = process.env.FRONTEND_URL || 'https://visionary-frangipane-0f37b9.netlify.app'
+  const frontendUrl = process.env.FRONTEND_URL || 'https://resonant-wisp-67c4aa.netlify.app'
   
   // ✅ IMPORTANT : Utiliser activationToken (JWT), PAS tempPassword !
   const activationLink = `${frontendUrl}/activate?token=${activationToken}`

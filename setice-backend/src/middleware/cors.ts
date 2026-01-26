@@ -7,7 +7,7 @@ export function middleware(request: NextRequest) {
   // Liste des origines autorisées
   const allowedOrigins = [
          // Production
-    'https://visionary-frangipane-0f37b9.netlify.app',     // Preview
+    'https://resonant-wisp-67c4aa.netlify.app',     // Preview
     'http://localhost:3000',                          // Dev local
     'http://localhost:3001',
   ]
