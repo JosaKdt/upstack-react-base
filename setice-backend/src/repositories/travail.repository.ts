@@ -15,14 +15,15 @@ export const travailRepository = {
     const db = await getDataSource()
     const repo = db.getRepository(Travail)
     return repo.findOne({
-       where: { id },
-       relations: ['espacePedagogique',
+      where: { id },
+      relations: [
+        'espacePedagogique',
         'espacePedagogique.etudiants',
         'espacePedagogique.promotion',
         'espacePedagogique.matiere',
-        
-        'formateur'],
-      })
+        'formateur'
+      ],
+    })
   },
 
   async listByEspace(espaceId: string) {
@@ -35,12 +36,17 @@ export const travailRepository = {
     })
   },
 
-
+  // ✅ CORRIGÉ : Suppression de 'formateur.user' qui n'existe pas
   async findByIdEntity(id: string): Promise<Travail | null> {
     const db = await getDataSource()
     return await db.getRepository(Travail).findOne({
       where: { id },
-      relations: ['formateur', 'formateur.user', 'espacePedagogique'], // Ajustez selon vos relations
+      relations: [
+        'formateur',              // ✅ formateur est déjà un User
+        'espacePedagogique',
+        'espacePedagogique.matiere',
+        'espacePedagogique.promotion'
+      ],
     })
   },
 }
