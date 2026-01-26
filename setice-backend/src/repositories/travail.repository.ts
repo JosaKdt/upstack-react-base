@@ -36,16 +36,16 @@ export const travailRepository = {
     })
   },
 
-  // ✅ CORRIGÉ : Suppression de 'formateur.user' qui n'existe pas
   async findByIdEntity(id: string): Promise<Travail | null> {
     const db = await getDataSource()
     return await db.getRepository(Travail).findOne({
       where: { id },
       relations: [
-        'formateur',              // ✅ formateur est déjà un User
+        'formateur',
         'espacePedagogique',
         'espacePedagogique.matiere',
-        'espacePedagogique.promotion'
+        'espacePedagogique.promotion',
+        'espacePedagogique.etudiants'  // ✅ AJOUTÉ : Pour vérifier l'inscription
       ],
     })
   },
