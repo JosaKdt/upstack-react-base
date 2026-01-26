@@ -5,9 +5,10 @@ import { assignTravail } from '@/src/services/assignation.service'
 import { travailRepository } from '@/src/repositories/travail.repository'
 import { etudiantRepository } from '@/src/repositories/etudiant.repository'
 import { Role } from '@/src/entities/User'
+import { getDataSource } from '@/src/lib/db'
+import { User } from '@/src/entities/User'
 
 const JWT_SECRET = process.env.JWT_SECRET!
-
 
 function getUser(req: NextRequest) {
   const auth = req.headers.get('authorization')
@@ -46,7 +47,6 @@ export async function POST(req: NextRequest) {
     }
 
     console.log('3️⃣ Fetching travail entity...')
-    // ✅ Utiliser findByIdEntity pour récupérer l'entité complète
     const travail = await travailRepository.findByIdEntity(travailId)
     if (!travail) {
       console.log('❌ TRAVAIL_NOT_FOUND')
@@ -58,7 +58,6 @@ export async function POST(req: NextRequest) {
     console.log('✅ Travail found:', travail.id, travail.titre)
 
     console.log('4️⃣ Fetching etudiant entity...')
-    // ✅ Utiliser findByIdEntity pour récupérer l'entité complète
     const etudiant = await etudiantRepository.findByIdEntity(etudiantId)
     if (!etudiant) {
       console.log('❌ ETUDIANT_NOT_FOUND')
@@ -69,18 +68,34 @@ export async function POST(req: NextRequest) {
     }
     console.log('✅ Etudiant found:', etudiant.id, etudiant.matricule)
 
-    console.log('5️⃣ Creating assignation...')
+    // ✅ 5️⃣ Récupérer le User du formateur depuis la DB (pas depuis le travail)
+    console.log('5️⃣ Fetching formateur user from DB...')
+    const db = await getDataSource()
+    const userRepo = db.getRepository(User)
+    const formateurUser = await userRepo.findOne({ 
+      where: { id: formateurJWT.userId } 
+    })
+    
+    if (!formateurUser) {
+      console.log('❌ FORMATEUR_USER_NOT_FOUND')
+      return NextResponse.json(
+        { success: false, error: 'Formateur user not found' },
+        { status: 404 }
+      )
+    }
+    console.log('✅ Formateur user found:', formateurUser.id, formateurUser.email)
+
+    console.log('6️⃣ Creating assignation...')
     const assignation = await assignTravail({
       travail,
       etudiant,
-      formateur: travail.formateur,
+      formateur: formateurUser,  // ✅ CORRECTION : Passer le User directement
     })
     console.log('✅ Assignation created:', assignation)
 
-    // ✅ Retourner un objet PLAIN (pas l'entité directement)
     return NextResponse.json({
       success: true,
-      data: assignation // assignTravail devrait déjà retourner un objet plain
+      data: assignation
     })
   } catch (err: any) {
     console.error('❌ CREATE ASSIGNATION ERROR:', err)
