@@ -5,7 +5,7 @@ import { getDataSource } from "@/src/lib/db"
 import { User } from "@/src/entities/User"
 import { hashPassword } from "@/src/lib/password"
 
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key'
+const JWT_SECRET = process.env.JWT_SECRET!
 
 interface ActivatePayload {
   userId: string

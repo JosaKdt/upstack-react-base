@@ -1,11 +1,11 @@
-
 // src/services/formateur.service.ts
 import { getDataSource } from '@/src/lib/db'
-
 import { Role } from '@/src/entities/User'
 import { generateTemporaryPassword, hashPassword } from '@/src/lib/password'
 import jwt from 'jsonwebtoken'
-import { sendActivationEmail } from '@/src/lib/mail-form'
+import { sendActivationEmail } from '@/src/lib/mail' // ✅ CORRIGÉ : mail au lieu de mail-form
+
+const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key-setice-universite'
 
 export interface CreateFormateurInput {
   nom: string
@@ -36,6 +36,8 @@ export async function createFormateur(input: CreateFormateurInput) {
   const tempPassword = generateTemporaryPassword()
   const hashedPassword = await hashPassword(tempPassword)
 
+  console.log('🔑 [FORMATEUR-SERVICE] Mot de passe temporaire généré:', tempPassword)
+
   // 3️⃣ Créer le User
   const user = userRepo.create({
     nom: input.nom,
@@ -50,11 +52,19 @@ export async function createFormateur(input: CreateFormateurInput) {
   await userRepo.save(user)
 
   // 4️⃣ Générer le token d'activation JWT
+  console.log('🔐 [FORMATEUR-SERVICE] JWT_SECRET présent?', !!JWT_SECRET)
+  
   const token = jwt.sign(
-    { userId: user.id },
-    process.env.JWT_SECRET || 'super-secret-key-setice-universite',
+    { 
+      userId: user.id,
+      type: 'activation'  // ✅ AJOUTÉ : type activation
+    },
+    JWT_SECRET,
     { expiresIn: '24h' }
   )
+
+  console.log('✅ [FORMATEUR-SERVICE] Token généré (preview):', token.substring(0, 50) + '...')
+  console.log('✅ [FORMATEUR-SERVICE] Token length:', token.length)
 
   user.activationToken = token
   user.activationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000)
@@ -70,12 +80,20 @@ export async function createFormateur(input: CreateFormateurInput) {
 
   // 6️⃣ Envoyer l'email d'activation
   try {
-    await sendActivationEmail(user.email, tempPassword, token)
+    console.log('📧 [FORMATEUR-SERVICE] Envoi email avec:')
+    console.log('   - Email:', user.email)
+    console.log('   - TempPassword:', tempPassword)
+    console.log('   - Token (preview):', token.substring(0, 30) + '...')
+    
+    await sendActivationEmail(user.email, tempPassword, token)  // ✅ Ordre correct
+    
+    console.log('✅ [FORMATEUR-SERVICE] Email d\'activation envoyé à:', user.email)
   } catch (emailError) {
-    console.error('❌ Erreur envoi email:', emailError)
+    console.error('❌ [FORMATEUR-SERVICE] Erreur envoi email:', emailError)
+    // Ne pas bloquer la création si l'email échoue
   }
 
-  // 7️⃣ Retourner la structure cohérente avec le type TypeScript
+  // 7️⃣ Retourner la structure cohérente
   return {
     id: formateur.id,
     actif: !user.motDePasseTemporaire && user.isActive,
@@ -87,16 +105,13 @@ export async function createFormateur(input: CreateFormateurInput) {
       email: user.email,
       role: user.role,
     },
-    // ⚠️ Info supplémentaires pour le debug (optionnel)
+    // Info pour le debug
     _debug: {
       temporaryPassword: tempPassword,
       activationToken: token,
     }
   }
 }
-
-// ✅ FIX : Chargement correct des relations
-// src/services/formateur.service.ts
 
 export async function getFormateurs() {
   const db = await getDataSource()
@@ -113,7 +128,7 @@ export async function getFormateurs() {
 
   console.log('📦 Formateurs chargés:', formateurs.length)
   
-  // ✅ Retourner la structure avec user imbriqué (comme attendu par le type TypeScript)
+  // ✅ Retourner la structure avec user imbriqué
   return formateurs.map((f) => {
     if (!f.user) {
       console.error('⚠️ Formateur sans user:', f.id)
