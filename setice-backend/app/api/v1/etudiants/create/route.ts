@@ -3,8 +3,8 @@ export const runtime = 'nodejs'
 
 import { NextRequest, NextResponse } from 'next/server'
 import jwt from 'jsonwebtoken'
-import { createEtudiant, getEtudiants } from '@/src/services/etudiant.service'
-import { createEtudiantSchema } from '@/src/schemas/etudiant.schema'
+import { createEtudiant, getEtudiants, deleteEtudiant, updateEtudiant } from '@/src/services/etudiant.service'
+import { createEtudiantSchema, updateEtudiantSchema } from '@/src/schemas/etudiant.schema'
 
 const JWT_SECRET = process.env.JWT_SECRET!
 
@@ -97,6 +97,115 @@ export async function POST(req: NextRequest) {
     let status = 400
     if (err.message === 'USER_ALREADY_EXISTS') status = 409
     if (err.message === 'PROMOTION_NOT_FOUND') status = 404
+    if (err.message === 'jwt expired' || err.message === 'jwt malformed') status = 401
+
+    return NextResponse.json(
+      { success: false, error: err.message },
+      { status }
+    )
+  }
+}
+
+export async function PUT(req: NextRequest) {
+  try {
+    const authHeader = req.headers.get('authorization')
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const token = authHeader.split(' ')[1]
+    jwt.verify(token, JWT_SECRET)
+
+    const body = await req.json()
+    const { id, ...data } = body
+    
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'ID étudiant requis' },
+        { status: 400 }
+      )
+    }
+
+    const validatedData = updateEtudiantSchema.parse(data)
+    const etudiant = await updateEtudiant(id, validatedData)
+
+    // ✅ Adapter pour le frontend (structure imbriquée)
+    const adaptedEtudiant = {
+      id: etudiant.id,
+      matricule: etudiant.matricule,
+      actif: etudiant.actif,
+      user: {
+        id: etudiant.userId,
+        nom: etudiant.nom,
+        prenom: etudiant.prenom,
+        email: etudiant.email,
+        role: etudiant.role,
+      },
+      promotion: {
+        id: etudiant.promotionId,
+        code: etudiant.promotionCode,
+        libelle: etudiant.promotionLibelle,
+        annee: etudiant.promotionAnnee,
+      },
+      updatedAt: etudiant.updatedAt,
+    }
+
+    return NextResponse.json(
+      { success: true, data: adaptedEtudiant },
+      { status: 200 }
+    )
+  } catch (err: any) {
+    console.error('UPDATE ETUDIANT ERROR:', err)
+
+    let status = 400
+    if (err.message === 'ETUDIANT_NOT_FOUND') status = 404
+    if (err.message === 'PROMOTION_NOT_FOUND') status = 404
+    if (err.message === 'jwt expired' || err.message === 'jwt malformed') status = 401
+
+    return NextResponse.json(
+      { success: false, error: err.message },
+      { status }
+    )
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const authHeader = req.headers.get('authorization')
+    if (!authHeader?.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    const token = authHeader.split(' ')[1]
+    jwt.verify(token, JWT_SECRET)
+
+    const { searchParams } = new URL(req.url)
+    const id = searchParams.get('id')
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'ID étudiant requis' },
+        { status: 400 }
+      )
+    }
+
+    await deleteEtudiant(id)
+
+    return NextResponse.json(
+      { success: true, message: 'Étudiant supprimé avec succès' },
+      { status: 200 }
+    )
+  } catch (err: any) {
+    console.error('DELETE ETUDIANT ERROR:', err)
+
+    let status = 400
+    if (err.message === 'ETUDIANT_NOT_FOUND') status = 404
     if (err.message === 'jwt expired' || err.message === 'jwt malformed') status = 401
 
     return NextResponse.json(

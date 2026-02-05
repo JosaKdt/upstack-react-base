@@ -1,9 +1,9 @@
 // src/services/etudiant.service.ts
-import { getDataSource } from '@/src/lib/db' // ✅ Changez aussi ça
+import { getDataSource } from '@/src/lib/db'
 import {  Role } from '@/src/entities/User'
 import { Etudiant } from '@/src/entities/Etudiant'
 import { generateTemporaryPassword, hashPassword } from '@/src/lib/password'
-import { CreateEtudiantInput } from '@/src/schemas/etudiant.schema'
+import { CreateEtudiantInput, UpdateEtudiantInput } from '@/src/schemas/etudiant.schema'
 import { generateMatricule } from '../lib/etudiant.utils'
 import jwt from 'jsonwebtoken'
 import { sendActivationEmail } from '@/src/lib/mail'
@@ -158,4 +158,124 @@ export async function getEtudiants() {
     createdAt: e.user.createdAt.toISOString(),
     updatedAt: e.user.updatedAt.toISOString(),
   }))
+}
+
+// ✅ NOUVELLE FONCTION UPDATE
+export async function updateEtudiant(id: string, input: UpdateEtudiantInput) {
+  const db = await getDataSource()
+
+  // ✅ Import dynamique
+  const { User } = await import('@/src/entities/User')
+  const { Etudiant } = await import('@/src/entities/Etudiant')
+  const { Promotion } = await import('@/src/entities/Promotion')
+
+  const userRepo = db.getRepository(User)
+  const etudiantRepo = db.getRepository(Etudiant)
+  const promotionRepo = db.getRepository(Promotion)
+
+  // 1️⃣ Trouver l'étudiant
+  const etudiant = await etudiantRepo.findOne({
+    where: { id },
+    relations: ['user', 'promotion'],
+  })
+
+  if (!etudiant) {
+    throw new Error('ETUDIANT_NOT_FOUND')
+  }
+
+  // 2️⃣ Mettre à jour les infos du user
+  if (input.nom) etudiant.user.nom = input.nom
+  if (input.prenom) etudiant.user.prenom = input.prenom
+  if (input.email) {
+    // Vérifier si l'email n'est pas déjà pris par un autre user
+    const emailExists = await userRepo.findOne({
+      where: { email: input.email },
+    })
+    if (emailExists && emailExists.id !== etudiant.user.id) {
+      throw new Error('EMAIL_ALREADY_EXISTS')
+    }
+    etudiant.user.email = input.email
+  }
+
+  await userRepo.save(etudiant.user)
+
+  // 3️⃣ Mettre à jour la promotion si fournie
+  if (input.promotionId) {
+    const promotion = await promotionRepo.findOne({
+      where: { id: input.promotionId },
+    })
+
+    if (!promotion) {
+      throw new Error('PROMOTION_NOT_FOUND')
+    }
+
+    etudiant.promotion = promotion
+  }
+
+  // 4️⃣ Mettre à jour le matricule si fourni
+  if (input.matricule) {
+    // Vérifier si le matricule n'est pas déjà pris
+    const matriculeExists = await etudiantRepo.findOne({
+      where: { matricule: input.matricule },
+    })
+    if (matriculeExists && matriculeExists.id !== etudiant.id) {
+      throw new Error('MATRICULE_ALREADY_EXISTS')
+    }
+    etudiant.matricule = input.matricule
+  }
+
+  await etudiantRepo.save(etudiant)
+
+  // 5️⃣ Recharger avec les relations
+  const updated = await etudiantRepo.findOne({
+    where: { id },
+    relations: ['user', 'promotion'],
+  })
+
+  // 6️⃣ Retourner un objet FLAT
+  return {
+    id: updated!.id,
+    matricule: updated!.matricule,
+    userId: updated!.user.id,
+    nom: updated!.user.nom,
+    prenom: updated!.user.prenom,
+    email: updated!.user.email,
+    role: updated!.user.role,
+    actif: !updated!.user.motDePasseTemporaire && updated!.user.isActive,
+    promotionId: updated!.promotion.id,
+    promotionCode: updated!.promotion.code,
+    promotionLibelle: updated!.promotion.libelle,
+    promotionAnnee: updated!.promotion.annee,
+    updatedAt: updated!.user.updatedAt.toISOString(),
+  }
+}
+
+// ✅ NOUVELLE FONCTION DELETE
+export async function deleteEtudiant(id: string) {
+  const db = await getDataSource()
+
+  // ✅ Import dynamique
+  const { User } = await import('@/src/entities/User')
+  const { Etudiant } = await import('@/src/entities/Etudiant')
+
+  const userRepo = db.getRepository(User)
+  const etudiantRepo = db.getRepository(Etudiant)
+
+  // 1️⃣ Trouver l'étudiant
+  const etudiant = await etudiantRepo.findOne({
+    where: { id },
+    relations: ['user'],
+  })
+
+  if (!etudiant) {
+    throw new Error('ETUDIANT_NOT_FOUND')
+  }
+
+  // 2️⃣ Supprimer l'étudiant d'abord (à cause de la contrainte FK)
+  await etudiantRepo.remove(etudiant)
+
+  // 3️⃣ Supprimer le user
+  await userRepo.remove(etudiant.user)
+
+  return { success: true }
 }
