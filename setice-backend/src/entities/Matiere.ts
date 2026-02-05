@@ -27,4 +27,5 @@ export class Matiere {
 
   @UpdateDateColumn()
   updatedAt!: Date
+  credits: any
 }

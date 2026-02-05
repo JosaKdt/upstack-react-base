@@ -149,3 +149,106 @@ export async function getFormateurs() {
     }
   }).filter(Boolean) // Enlever les nulls
 }
+
+// ✅ AJOUTE CETTE FONCTION - DELETE FORMATEUR
+export async function deleteFormateur(formateurId: string) {
+  const db = await getDataSource()
+  
+  const { User } = await import('@/src/entities/User')
+  const { Formateur } = await import('@/src/entities/Formateur')
+  
+  const formateurRepo = db.getRepository(Formateur)
+  const userRepo = db.getRepository(User)
+
+  // 1️⃣ Trouver le formateur avec son user
+  const formateur = await formateurRepo.findOne({
+    where: { id: formateurId },
+    relations: ['user'],
+  })
+
+  if (!formateur) {
+    throw new Error('FORMATEUR_NOT_FOUND')
+  }
+
+  // 2️⃣ Supprimer le formateur (cascade supprimera le user si configuré)
+  await formateurRepo.remove(formateur)
+
+  // 3️⃣ Si cascade n'est pas configuré, supprimer manuellement le user
+  if (formateur.user) {
+    await userRepo.remove(formateur.user)
+  }
+
+  console.log('✅ [FORMATEUR-SERVICE] Formateur supprimé:', formateurId)
+  
+  return { success: true }
+}
+
+// ✅ AJOUTE CETTE FONCTION - UPDATE FORMATEUR
+export async function updateFormateur(
+  formateurId: string,
+  input: Partial<{
+    nom: string
+    prenom: string
+    email: string
+    specialite: string
+  }>
+) {
+  const db = await getDataSource()
+  
+  const { User } = await import('@/src/entities/User')
+  const { Formateur } = await import('@/src/entities/Formateur')
+  
+  const formateurRepo = db.getRepository(Formateur)
+  const userRepo = db.getRepository(User)
+
+  // 1️⃣ Trouver le formateur avec son user
+  const formateur = await formateurRepo.findOne({
+    where: { id: formateurId },
+    relations: ['user'],
+  })
+
+  if (!formateur || !formateur.user) {
+    throw new Error('FORMATEUR_NOT_FOUND')
+  }
+
+  // 2️⃣ Vérifier si l'email est déjà utilisé par un autre user
+  if (input.email && input.email !== formateur.user.email) {
+    const existingUser = await userRepo.findOne({
+      where: { email: input.email },
+    })
+
+    if (existingUser && existingUser.id !== formateur.user.id) {
+      throw new Error('EMAIL_ALREADY_EXISTS')
+    }
+  }
+
+  // 3️⃣ Mettre à jour le User
+  if (input.nom) formateur.user.nom = input.nom
+  if (input.prenom) formateur.user.prenom = input.prenom
+  if (input.email) formateur.user.email = input.email
+
+  await userRepo.save(formateur.user)
+
+  // 4️⃣ Mettre à jour le Formateur
+  if (input.specialite !== undefined) {
+    formateur.specialite = input.specialite || null
+  }
+
+  await formateurRepo.save(formateur)
+
+  console.log('✅ [FORMATEUR-SERVICE] Formateur mis à jour:', formateurId)
+
+  // 5️⃣ Retourner la structure cohérente
+  return {
+    id: formateur.id,
+    actif: !formateur.user.motDePasseTemporaire && formateur.user.isActive,
+    specialite: formateur.specialite,
+    user: {
+      id: formateur.user.id,
+      nom: formateur.user.nom,
+      prenom: formateur.user.prenom,
+      email: formateur.user.email,
+      role: formateur.user.role,
+    },
+  }
+}

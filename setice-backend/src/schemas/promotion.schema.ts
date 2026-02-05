@@ -1,17 +1,19 @@
-console.log('🟣 [SCHEMA-PROMOTION] 1. Début chargement promotion.schema.ts')
-
 import { z } from 'zod'
 
-console.log('🟣 [SCHEMA-PROMOTION] 2. Zod importé avec succès')
-
+// ✅ Schéma pour la création
 export const createPromotionSchema = z.object({
-  code: z.string().min(1),
-  libelle: z.string().min(1),
-  annee: z.string().min(4),
+  code: z.string().min(1, "Le code est requis"),
+  libelle: z.string().min(1, "Le libellé est requis"),
+  annee: z.string().regex(/^\d{4}$/, "L'année doit être au format YYYY"),
 })
 
-console.log('🟣 [SCHEMA-PROMOTION] 3. Schema défini avec succès')
+// ✅ Schéma pour la mise à jour (tous les champs sont optionnels)
+export const updatePromotionSchema = z.object({
+  id: z.string().uuid("ID invalide"),
+  code: z.string().min(1, "Le code est requis").optional(),
+  libelle: z.string().min(1, "Le libellé est requis").optional(),
+  annee: z.string().regex(/^\d{4}$/, "L'année doit être au format YYYY").optional(),
+})
 
 export type CreatePromotionInput = z.infer<typeof createPromotionSchema>
-
-console.log('✅ [SCHEMA-PROMOTION] 4. Type exporté avec succès')
+export type UpdatePromotionInput = z.infer<typeof updatePromotionSchema>
