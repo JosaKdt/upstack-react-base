@@ -1,6 +1,7 @@
 import {
   Entity,
   PrimaryGeneratedColumn,
+  Column,
   ManyToOne,
   ManyToMany,
   JoinTable,
@@ -17,13 +18,17 @@ export class EspacePedagogique {
   @PrimaryGeneratedColumn('uuid')
   id!: string
 
+  // ✅ Ajout du champ annee
+  @Column({ type: 'varchar', length: 9 })
+  annee!: string
+
   @ManyToOne(() => Promotion, { nullable: false })
   promotion!: Promotion
 
   @ManyToOne(() => Matiere, { nullable: false })
   matiere!: Matiere
 
-  // ✅ CHANGÉ: nullable: true pour permettre la suppression du formateur
+  // ✅ CHANGEMENT ICI : nullable: true pour permettre la suppression du formateur
   @ManyToOne(() => Formateur, { nullable: true })
   formateur!: Formateur | null
 
