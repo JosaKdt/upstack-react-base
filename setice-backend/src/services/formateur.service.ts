@@ -146,15 +146,17 @@ export async function getFormateurs() {
   }).filter(Boolean)
 }
 
-// ✅ DELETE FORMATEUR - SET NULL (garde les espaces pédagogiques)
+// ✅ DELETE FORMATEUR - Version simple qui marche avec nullable: true
 export async function deleteFormateur(formateurId: string) {
   const db = await getDataSource()
   
   const { User } = await import('@/src/entities/User')
   const { Formateur } = await import('@/src/entities/Formateur')
+  const { EspacePedagogique } = await import('@/src/entities/EspacePedagogique')
 
   const formateurRepo = db.getRepository(Formateur)
   const userRepo = db.getRepository(User)
+  const espaceRepo = db.getRepository(EspacePedagogique)
 
   // 1️⃣ Trouver le formateur avec son user
   const formateur = await formateurRepo.findOne({
@@ -168,15 +170,17 @@ export async function deleteFormateur(formateurId: string) {
 
   console.log('🗑️ [FORMATEUR-SERVICE] Suppression formateur:', formateurId)
 
-  // 2️⃣ IMPORTANT: Retirer le formateur des espaces pédagogiques (SET NULL)
-  // Utilisation de SQL brut pour éviter les problèmes de typage
+  // 2️⃣ IMPORTANT: Mettre à NULL le formateur dans les espaces pédagogiques
+  // Maintenant que nullable: true, TypeORM accepte SET NULL
   try {
-    const result = await db.query(
-      `UPDATE espaces_pedagogiques SET "formateurId" = NULL WHERE "formateurId" = $1`,
-      [formateurId]
-    )
+    const espacesUpdated = await espaceRepo
+      .createQueryBuilder()
+      .update()
+      .set({ formateur: null })
+      .where('formateurId = :formateurId', { formateurId })
+      .execute()
 
-    console.log('✅ [FORMATEUR-SERVICE] Espaces désassignés:', result[1] || 0)
+    console.log('✅ [FORMATEUR-SERVICE] Espaces désassignés:', espacesUpdated.affected)
   } catch (error) {
     console.error('❌ [FORMATEUR-SERVICE] Erreur désassignation espaces:', error)
     throw new Error('ERREUR_DESASSIGNATION_ESPACES')

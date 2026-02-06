@@ -7,7 +7,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm'
-import { Promotion } from './Promotion'  // ✅ Import normal
+import { Promotion } from './Promotion'
 import { Formateur } from './Formateur'
 import { Matiere } from './Matiere'
 import { Etudiant } from './Etudiant'
@@ -23,8 +23,9 @@ export class EspacePedagogique {
   @ManyToOne(() => Matiere, { nullable: false })
   matiere!: Matiere
 
-  @ManyToOne(() => Formateur, { nullable: false })
-  formateur!: Formateur
+  // ✅ CHANGÉ: nullable: true pour permettre la suppression du formateur
+  @ManyToOne(() => Formateur, { nullable: true })
+  formateur!: Formateur | null
 
   @ManyToMany(() => Etudiant, { eager: false })
   @JoinTable({
