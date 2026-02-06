@@ -3,7 +3,7 @@ import { getDataSource } from '@/src/lib/db'
 import { Role } from '@/src/entities/User'
 import { generateTemporaryPassword, hashPassword } from '@/src/lib/password'
 import jwt from 'jsonwebtoken'
-import { sendActivationEmail } from '@/src/lib/mail' // ✅ CORRIGÉ : mail au lieu de mail-form
+import { sendActivationEmail } from '@/src/lib/mail'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key-setice-universite'
 
@@ -57,7 +57,7 @@ export async function createFormateur(input: CreateFormateurInput) {
   const token = jwt.sign(
     { 
       userId: user.id,
-      type: 'activation'  // ✅ AJOUTÉ : type activation
+      type: 'activation'
     },
     JWT_SECRET,
     { expiresIn: '24h' }
@@ -85,12 +85,11 @@ export async function createFormateur(input: CreateFormateurInput) {
     console.log('   - TempPassword:', tempPassword)
     console.log('   - Token (preview):', token.substring(0, 30) + '...')
     
-    await sendActivationEmail(user.email, tempPassword, token)  // ✅ Ordre correct
+    await sendActivationEmail(user.email, tempPassword, token)
     
     console.log('✅ [FORMATEUR-SERVICE] Email d\'activation envoyé à:', user.email)
   } catch (emailError) {
     console.error('❌ [FORMATEUR-SERVICE] Erreur envoi email:', emailError)
-    // Ne pas bloquer la création si l'email échoue
   }
 
   // 7️⃣ Retourner la structure cohérente
@@ -105,7 +104,6 @@ export async function createFormateur(input: CreateFormateurInput) {
       email: user.email,
       role: user.role,
     },
-    // Info pour le debug
     _debug: {
       temporaryPassword: tempPassword,
       activationToken: token,
@@ -120,7 +118,6 @@ export async function getFormateurs() {
   
   const formateurRepo = db.getRepository(Formateur)
 
-  // ✅ Charger les formateurs avec leurs users
   const formateurs = await formateurRepo
     .createQueryBuilder('formateur')
     .leftJoinAndSelect('formateur.user', 'user')
@@ -128,7 +125,6 @@ export async function getFormateurs() {
 
   console.log('📦 Formateurs chargés:', formateurs.length)
   
-  // ✅ Retourner la structure avec user imbriqué
   return formateurs.map((f) => {
     if (!f.user) {
       console.error('⚠️ Formateur sans user:', f.id)
@@ -147,16 +143,16 @@ export async function getFormateurs() {
         role: f.user.role,
       },
     }
-  }).filter(Boolean) // Enlever les nulls
+  }).filter(Boolean)
 }
 
-// ✅ AJOUTE CETTE FONCTION - DELETE FORMATEUR
+// ✅ DELETE FORMATEUR - SET NULL (garde les espaces pédagogiques)
 export async function deleteFormateur(formateurId: string) {
   const db = await getDataSource()
   
   const { User } = await import('@/src/entities/User')
   const { Formateur } = await import('@/src/entities/Formateur')
-  
+
   const formateurRepo = db.getRepository(Formateur)
   const userRepo = db.getRepository(User)
 
@@ -170,20 +166,36 @@ export async function deleteFormateur(formateurId: string) {
     throw new Error('FORMATEUR_NOT_FOUND')
   }
 
-  // 2️⃣ Supprimer le formateur (cascade supprimera le user si configuré)
+  console.log('🗑️ [FORMATEUR-SERVICE] Suppression formateur:', formateurId)
+
+  // 2️⃣ IMPORTANT: Retirer le formateur des espaces pédagogiques (SET NULL)
+  // Utilisation de SQL brut pour éviter les problèmes de typage
+  try {
+    const result = await db.query(
+      `UPDATE espaces_pedagogiques SET "formateurId" = NULL WHERE "formateurId" = $1`,
+      [formateurId]
+    )
+
+    console.log('✅ [FORMATEUR-SERVICE] Espaces désassignés:', result[1] || 0)
+  } catch (error) {
+    console.error('❌ [FORMATEUR-SERVICE] Erreur désassignation espaces:', error)
+    throw new Error('ERREUR_DESASSIGNATION_ESPACES')
+  }
+
+  // 3️⃣ Supprimer le formateur
   await formateurRepo.remove(formateur)
 
-  // 3️⃣ Si cascade n'est pas configuré, supprimer manuellement le user
+  // 4️⃣ Supprimer le user associé
   if (formateur.user) {
     await userRepo.remove(formateur.user)
   }
 
-  console.log('✅ [FORMATEUR-SERVICE] Formateur supprimé:', formateurId)
+  console.log('✅ [FORMATEUR-SERVICE] Formateur supprimé, espaces conservés:', formateurId)
   
   return { success: true }
 }
 
-// ✅ AJOUTE CETTE FONCTION - UPDATE FORMATEUR
+// ✅ UPDATE FORMATEUR
 export async function updateFormateur(
   formateurId: string,
   input: Partial<{
