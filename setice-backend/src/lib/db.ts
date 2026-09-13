@@ -1,8 +1,5 @@
 import { AppDataSource } from './data-source'
 
-
-let initialized = false
-
 export async function initializeDatabase() {
   if (!AppDataSource.isInitialized) {
     console.log('⏳ Initialisation DB...')
@@ -10,4 +7,9 @@ export async function initializeDatabase() {
     console.log('✅ DB connectée')
   }
   return AppDataSource
+}
+
+// ✅ Alias attendu par tous les repositories/services
+export async function getDataSource() {
+  return initializeDatabase()
 }
