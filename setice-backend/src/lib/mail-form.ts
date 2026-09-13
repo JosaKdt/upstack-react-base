@@ -2,7 +2,7 @@ import nodemailer from 'nodemailer'
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
+  port: Number(process.env.SMTP_PORT) || 587,
   secure: false, // true si port 465
   auth: {
     user: process.env.SMTP_USER,
@@ -19,7 +19,7 @@ export async function sendActivationEmail(email: string, tempPassword: string, t
     subject: 'Activation de votre compte formateur',
     html: `
       <p>Bonjour,</p>
-      <p>Votre compte formateur a été créé avec succès.</p>
+      <p>Votre compte formateur a ete cree avec succes.</p>
       <p><strong>Email:</strong> ${email}</p>
       <p><strong>Mot de passe temporaire:</strong> ${tempPassword}</p>
       <p>Pour activer votre compte, cliquez sur ce lien:</p>
@@ -28,5 +28,10 @@ export async function sendActivationEmail(email: string, tempPassword: string, t
     `,
   }
 
-  await transporter.sendMail(mailOptions)
+  try {
+    await transporter.sendMail(mailOptions)
+    console.log('Email formateur envoye a', email)
+  } catch (error) {
+    console.error('Erreur envoi email formateur (ignoree):', error)
+  }
 }
