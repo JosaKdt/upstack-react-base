@@ -47,8 +47,8 @@ export async function evaluateTravail(input: EvaluateTravailInput) {
   console.log("✅ [SERVICE] Assignation trouvée:", {
     id: assign.id,
     statut: assign.statut,
-    etudiantNom: assign.etudiant?.nom,
-    etudiantPrenom: assign.etudiant?.prenom,
+    etudiantNom: assign.etudiant?.user?.nom,
+    etudiantPrenom: assign.etudiant?.user?.prenom,
     travailTitre: assign.travail?.titre,
     travailBareme: assign.travail?.bareme
   })
