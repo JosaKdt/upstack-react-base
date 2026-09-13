@@ -6,7 +6,7 @@ import {
   JoinColumn,
   Column,
 } from 'typeorm'
-import { Promotion } from './Promotion'
+import type { Promotion } from './Promotion'
 import { User } from './User'
 import { EspacePedagogique } from './EspacePedagogique'
 
@@ -15,7 +15,7 @@ export class Etudiant {
   @PrimaryGeneratedColumn('uuid')
   id!: string
 
-  @ManyToOne(() => Promotion, (promotion) => promotion.etudiants, {
+  @ManyToOne('Promotion', 'etudiants', {
     nullable: false,
     onDelete: 'RESTRICT',
   })

@@ -6,7 +6,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm'
-import { Etudiant } from './Etudiant'
+import type { Etudiant } from './Etudiant'
 
 @Entity('promotions')
 export class Promotion {
@@ -22,7 +22,7 @@ export class Promotion {
   @Column()
   annee!: string
 
-  @OneToMany(() => Etudiant, (etudiant) => etudiant.promotion)
+  @OneToMany('Etudiant', 'promotion')
   etudiants!: Etudiant[]
 
   @CreateDateColumn()
