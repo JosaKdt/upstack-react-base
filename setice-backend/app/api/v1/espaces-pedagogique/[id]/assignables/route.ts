@@ -13,11 +13,10 @@ export async function OPTIONS() {
   return new Response(null, { status: 204, headers: CORS_HEADERS })
 }
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id: espaceId } = params
-    console.log('🔵 ASSIGNABLES - espaceId reçu:', espaceId)
-    
+    const { id: espaceId } = await params
+    console.log('🔵 ASSIGNABLES - espaceId reçu:', espaceId)    
     const db = await getDataSource()
 
     // 1️⃣ Récupère l'espace pédagogique

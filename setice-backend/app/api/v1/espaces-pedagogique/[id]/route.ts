@@ -17,13 +17,12 @@ export async function OPTIONS() {
 }
 
 // GET /api/v1/espaces-pedagogique/[id]
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    // Vérifier que l'utilisateur a le rôle Directeur des Études
+    const { id } = await params
     requireRole(req, ["DIRECTEUR_ETUDES", "FORMATEUR"])
 
-    // Récupérer l'espace par son id
-    const espace = await getEspacePedagogique(params.id)
+    const espace = await getEspacePedagogique(id)
 
     if (!espace) {
       return NextResponse.json({ success: false, error: "Espace pédagogique introuvable" }, { status: 404, headers: corsHeaders })

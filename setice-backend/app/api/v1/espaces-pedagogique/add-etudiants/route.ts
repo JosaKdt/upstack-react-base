@@ -111,9 +111,10 @@ export async function POST(req: NextRequest) {
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const espace = await getEspacePedagogique(params.id)
+  const { id } = await params
+  const espace = await getEspacePedagogique(id)
 
   return NextResponse.json({
     success: true,

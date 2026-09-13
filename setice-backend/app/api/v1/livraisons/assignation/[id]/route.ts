@@ -12,11 +12,11 @@ export async function OPTIONS() {
   return new Response(null, { status: 204, headers: CORS_HEADERS })
 }
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const livraison = await livraisonRepository.findByAssignation(params.id)
+    const { id } = await params
+    const livraison = await livraisonRepository.findByAssignation(id)
     return NextResponse.json({ success: true, data: livraison }, { headers: CORS_HEADERS })
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500, headers: CORS_HEADERS })
   }
