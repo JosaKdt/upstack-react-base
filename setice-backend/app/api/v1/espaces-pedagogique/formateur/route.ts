@@ -5,7 +5,7 @@ import { requireRole } from '@/src/middleware/auth.middleware'
 import jwt from 'jsonwebtoken'
 
 const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': 'http://localhost:3000',
+  'Access-Control-Allow-Origin': 'https://relaxed-selkie-3ef8a0.netlify.app',
   'Access-Control-Allow-Methods': 'GET,OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 }

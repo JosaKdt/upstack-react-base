@@ -8,7 +8,7 @@ const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'super-secret-key'
 
 // ✅ CORS HEADERS (UNE SEULE SOURCE DE VÉRITÉ)
 const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': 'http://localhost:3000',
+  'Access-Control-Allow-Origin': 'https://relaxed-selkie-3ef8a0.netlify.app',
   'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 }
