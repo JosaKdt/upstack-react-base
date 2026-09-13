@@ -77,12 +77,16 @@ do {
 
 
 
-  const etudiant = etudiantRepo.create({
+  const insertResult = await etudiantRepo.insert({
     user: { id: user.id } as User,
     promotion: { id: promotion.id } as Promotion,
     matricule,
   })
-  await etudiantRepo.save(etudiant)
+
+  const etudiant = await etudiantRepo.findOneByOrFail({
+    id: insertResult.identifiers[0].id,
+  })
+
   await sendActivationEmail(user.email, matricule, tempPassword, token)
 
   return {
