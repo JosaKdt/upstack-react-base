@@ -15,7 +15,7 @@ export class Etudiant {
   @PrimaryGeneratedColumn('uuid')
   id!: string
 
-  @ManyToOne('Promotion', 'etudiants', {
+  @ManyToOne('promotions', 'etudiants', {
     nullable: false,
     onDelete: 'RESTRICT',
   })

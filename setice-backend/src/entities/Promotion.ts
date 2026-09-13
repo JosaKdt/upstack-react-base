@@ -22,7 +22,7 @@ export class Promotion {
   @Column()
   annee!: string
 
-  @OneToMany('Etudiant', 'promotion')
+  @OneToMany('etudiants', 'promotion')
   etudiants!: Etudiant[]
 
   @CreateDateColumn()
