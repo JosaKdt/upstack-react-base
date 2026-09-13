@@ -1,44 +1,28 @@
-import nodemailer from 'nodemailer'
+﻿import sgMail from "@sendgrid/mail"
 
-console.log('📧 SMTP Config:', {
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
-  user: process.env.SMTP_USER,
-})
-
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT) || 587,
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASSWORD,
-  },
-})
+sgMail.setApiKey(process.env.SENDGRID_API_KEY || "")
 
 export async function sendActivationEmail(email: string, matricule: string, tempPassword: string, token: string) {
-  const activationLink = `${process.env.FRONTEND_URL}/activate?token=${token}`
+  const activationLink = process.env.FRONTEND_URL + "/activate?token=" + token
 
-  const mailOptions = {
-    from: '"SETICE" <no-reply@setice.edu>',
+  const msg = {
     to: email,
-    subject: 'Activation de votre compte étudiant',
-    html: `
-      <p>Bonjour,</p>
-      <p>Votre compte étudiant a été créé avec succès.</p>
-      <p><strong>Matricule:</strong> ${matricule}</p>
-      <p><strong>Mot de passe temporaire:</strong> ${tempPassword}</p>
-      <p>Pour activer votre compte, cliquez sur ce lien:</p>
-      <a href="${activationLink}">Activer mon compte</a>
-      <p>Merci !</p>
-    `,
+    from: process.env.SENDGRID_FROM_EMAIL || "no-reply@setice.edu",
+    subject: "Activation de votre compte etudiant",
+    html:
+      "<p>Bonjour,</p>" +
+      "<p>Votre compte etudiant a ete cree avec succes.</p>" +
+      "<p><strong>Matricule:</strong> " + matricule + "</p>" +
+      "<p><strong>Mot de passe temporaire:</strong> " + tempPassword + "</p>" +
+      "<p>Pour activer votre compte, cliquez sur ce lien:</p>" +
+      "<a href=\"" + activationLink + "\">Activer mon compte</a>" +
+      "<p>Merci !</p>",
   }
 
   try {
-    await transporter.sendMail(mailOptions)
-    console.log('✅ Email envoyé à', email)
-  } catch (error) {
-    // ✅ Ne fait pas planter la création de l'étudiant si l'email échoue
-    console.error('❌ Erreur envoi email (ignorée):', error)
+    await sgMail.send(msg)
+    console.log("Email envoye a", email)
+  } catch (error: any) {
+    console.error("Erreur envoi email (ignoree):", error?.response?.body || error)
   }
 }
