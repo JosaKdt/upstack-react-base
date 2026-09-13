@@ -1,9 +1,15 @@
 import nodemailer from 'nodemailer'
 
+console.log('📧 SMTP Config:', {
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  user: process.env.SMTP_USER,
+})
+
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: false, // true si port 465
+  port: Number(process.env.SMTP_PORT) || 587,
+  secure: false,
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASSWORD,
@@ -28,5 +34,11 @@ export async function sendActivationEmail(email: string, matricule: string, temp
     `,
   }
 
-  await transporter.sendMail(mailOptions)
+  try {
+    await transporter.sendMail(mailOptions)
+    console.log('✅ Email envoyé à', email)
+  } catch (error) {
+    // ✅ Ne fait pas planter la création de l'étudiant si l'email échoue
+    console.error('❌ Erreur envoi email (ignorée):', error)
+  }
 }
