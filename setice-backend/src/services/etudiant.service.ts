@@ -79,7 +79,7 @@ do {
 
   const etudiant = etudiantRepo.create({
     user: { id: user.id } as User,
-    promotion: { id: promotion.id } as Promotion,,
+    promotion: { id: promotion.id } as Promotion,
     matricule,
   })
   await etudiantRepo.save(etudiant)
