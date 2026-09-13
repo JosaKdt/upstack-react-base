@@ -78,7 +78,7 @@ do {
 
 
   const etudiant = etudiantRepo.create({
-    user:{ id: user.id } as User,
+    user: { id: user.id } as User,
     promotion: { id: promotion.id } as Promotion,,
     matricule,
   })
