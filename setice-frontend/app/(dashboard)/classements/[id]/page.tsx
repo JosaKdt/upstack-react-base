@@ -11,9 +11,9 @@ import {
   TrendingUp,
   Download,
 } from 'lucide-react'
-import { useRequireRole } from '@/contexts/auth-context'
+import { useRequireRole } from '@/context/auth-context'
 import { api } from '@/lib/api'
-import { Role, type Promotion, type Etudiant } from '@/lib/types'
+import { Role, type Promotion, type Etudiant } from '@/types/index'
 import { Button } from '@/components/ui/button'
 import {
   Card,
