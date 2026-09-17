@@ -26,7 +26,8 @@ export default function ActivatePage() {
 
     setIsLoading(true)
     try {
-      const res = await fetch(`http://localhost:3001/api/v1/etudiants/activate`, {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
+      const res = await fetch(`${API_URL}/api/v1/etudiants/activate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, newPassword: password }),
