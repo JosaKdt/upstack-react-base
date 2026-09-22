@@ -122,3 +122,37 @@ export function useAuth(allowedRoles?: Role[]) {
     hasAccess,
   }
 }
+
+
+
+// ✅ Hook useRequireRole - redirige automatiquement si pas connecté ou mauvais rôle
+export function useRequireRole(allowedRoles?: Role[]) {
+  const router = useRouter()
+  const context = useContext(AuthContext)
+
+  if (!context) {
+    throw new Error('useRequireRole must be used within an AuthProvider')
+  }
+
+  const { user, isLoading } = context
+
+  const hasAccess = useMemo(() => {
+    if (!user) return false
+    if (!allowedRoles || allowedRoles.length === 0) return true
+    return allowedRoles.includes(user.role as Role)
+  }, [user, allowedRoles])
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push('/login')
+    } else if (!isLoading && user && !hasAccess) {
+      router.push('/dashboard')
+    }
+  }, [isLoading, user, hasAccess, router])
+
+  return {
+    user,
+    isLoading,
+    hasAccess,
+  }
+}
