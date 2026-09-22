@@ -27,7 +27,7 @@ function ActivateForm() {
     setIsLoading(true)
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
-      const res = await fetch(`${API_URL}/api/v1/etudiants/activate`, {
+      const res = await fetch(`${API_URL}/etudiants/activate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, newPassword: password }),
