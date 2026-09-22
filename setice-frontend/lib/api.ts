@@ -25,7 +25,7 @@ import type {
   Livraison,
 } from "@/types"
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://upstack-react-base.onrender.com/api/v1"
 
 class ApiClient {
   private getToken(): string | null {
