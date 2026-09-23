@@ -138,3 +138,94 @@ export async function getEtudiants() {
     },
   }))
 }
+
+
+export interface UpdateEtudiantInput {
+  nom: string
+  prenom: string
+  email: string
+  promotionId: string
+}
+
+export async function updateEtudiant(id: string, input: UpdateEtudiantInput) {
+  const db = await getDataSource()
+  const userRepo = db.getRepository(User)
+  const etudiantRepo = db.getRepository(Etudiant)
+  const promotionRepo = db.getRepository(Promotion)
+
+  const etudiant = await etudiantRepo.findOne({
+    where: { id },
+    relations: ['user', 'promotion'],
+  })
+
+  if (!etudiant) {
+    throw new Error('ETUDIANT_NOT_FOUND')
+  }
+
+  const promotion = await promotionRepo.findOne({
+    where: { id: input.promotionId },
+  })
+
+  if (!promotion) {
+    throw new Error('PROMOTION_NOT_FOUND')
+  }
+
+  const emailOwner = await userRepo.findOne({ where: { email: input.email } })
+  if (emailOwner && emailOwner.id !== etudiant.user.id) {
+    throw new Error('USER_ALREADY_EXISTS')
+  }
+
+  await userRepo.update(etudiant.user.id, {
+    nom: input.nom,
+    prenom: input.prenom,
+    email: input.email,
+  })
+
+  await etudiantRepo.update(etudiant.id, {
+    promotion: { id: promotion.id } as Promotion,
+  })
+
+  const updated = await etudiantRepo.findOne({
+    where: { id },
+    relations: ['user', 'promotion'],
+  })
+
+  return {
+    id: updated!.id,
+    matricule: updated!.matricule,
+    user: {
+      id: updated!.user.id,
+      nom: updated!.user.nom,
+      prenom: updated!.user.prenom,
+      email: updated!.user.email,
+    },
+    promotion: {
+      id: updated!.promotion.id,
+      code: updated!.promotion.code,
+      libelle: updated!.promotion.libelle,
+      annee: updated!.promotion.annee,
+    },
+  }
+}
+
+export async function deleteEtudiant(id: string) {
+  const db = await getDataSource()
+  const userRepo = db.getRepository(User)
+  const etudiantRepo = db.getRepository(Etudiant)
+
+  const etudiant = await etudiantRepo.findOne({
+    where: { id },
+    relations: ['user'],
+  })
+
+  if (!etudiant) {
+    throw new Error('ETUDIANT_NOT_FOUND')
+  }
+
+  const userId = etudiant.user.id
+
+  await etudiantRepo.delete(etudiant.id)
+  await userRepo.delete(userId)
+
+  return { success: true }
+}
