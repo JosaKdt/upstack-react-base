@@ -122,6 +122,18 @@ class ApiClient {
       body: JSON.stringify(data),
     })
   }
+  async updateEtudiant(id: string, data: { nom: string; prenom: string; email: string; promotionId: string }): Promise<ApiResponse<Etudiant>> {
+    return this.request<Etudiant>(`/etudiants/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    })
+  }
+
+  async deleteEtudiant(id: string): Promise<ApiResponse<void>> {
+    return this.request<void>(`/etudiants/${id}`, {
+      method: "DELETE",
+    })
+  }
 
   async getEtudiantsAssignables(espacePedagogiqueId: string): Promise<ApiResponse<Etudiant[]>> {
     console.log("📡 [API] getEtudiantsAssignables - espacePedagogiqueId:", espacePedagogiqueId)

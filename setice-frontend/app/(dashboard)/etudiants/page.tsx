@@ -1,24 +1,46 @@
 "use client"
 
 import { Suspense, useState, useMemo } from "react"
-import { Plus, Mail, Search } from "lucide-react"
+import { Plus, Mail, Search, Pencil, Trash2, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { usePromotions } from "@/hooks/use-data"
+import { useEtudiants, usePromotions } from "@/hooks/use-data"
 import { CreateEtudiantModal } from "@/components/modals/create-etudiant-modal"
+import { EditEtudiantModal } from "@/components/modals/edit-etudiant-modal"
+import { api } from "@/lib/api"
+import { toast } from "sonner"
 import type { Etudiant } from "@/types"
-import { useEtudiants } from "@/hooks/useEtudiants"
 
 function EtudiantsContent() {
-  const { etudiants, isLoading } = useEtudiants()
+  const { etudiants, isLoading, mutate } = useEtudiants()
   const { promotions } = usePromotions()
   const [searchQuery, setSearchQuery] = useState("")
   const [promotionFilter, setPromotionFilter] = useState("all")
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [editingEtudiant, setEditingEtudiant] = useState<Etudiant | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
-  // ✅ Filtrage avec accès à e.user
+  const handleDelete = async (etudiant: Etudiant) => {
+    const confirmed = window.confirm(
+      `Supprimer ${etudiant.user.prenom} ${etudiant.user.nom} ? Cette action est irreversible.`
+    )
+    if (!confirmed) return
+
+    setDeletingId(etudiant.id)
+    const result = await api.deleteEtudiant(etudiant.id)
+
+    if (result.success) {
+      toast.success("Etudiant supprime avec succes")
+      mutate()
+    } else {
+      toast.error(result.error || "Erreur lors de la suppression")
+    }
+    setDeletingId(null)
+  }
+
+  // Filtrage avec acces a e.user
   const filteredEtudiants = useMemo(() => {
     return etudiants.filter((e) => {
       const matchesSearch =
@@ -39,12 +61,12 @@ function EtudiantsContent() {
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">Étudiants</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Gérez les comptes étudiants</p>
+          <h1 className="text-2xl font-semibold text-foreground">Etudiants</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Gerez les comptes etudiants</p>
         </div>
         <Button onClick={() => setShowCreateModal(true)}>
           <Plus className="mr-2 h-4 w-4" />
-          Créer
+          Creer
         </Button>
       </div>
 
@@ -53,7 +75,7 @@ function EtudiantsContent() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Rechercher un étudiant..."
+            placeholder="Rechercher un etudiant..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -87,11 +109,11 @@ function EtudiantsContent() {
         </div>
       ) : filteredEtudiants.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-16 text-center">
-          <p className="text-sm font-medium text-foreground">Aucun étudiant</p>
+          <p className="text-sm font-medium text-foreground">Aucun etudiant</p>
           <p className="mt-1 text-xs text-muted-foreground">
             {etudiants.length === 0
-              ? "Créez votre premier étudiant pour commencer"
-              : "Modifiez vos filtres pour voir plus de résultats"}
+              ? "Creez votre premier etudiant pour commencer"
+              : "Modifiez vos filtres pour voir plus de resultats"}
           </p>
         </div>
       ) : (
@@ -103,6 +125,9 @@ function EtudiantsContent() {
             <div className="w-28 text-xs font-medium uppercase tracking-wider text-muted-foreground">Matricule</div>
             <div className="w-32 text-xs font-medium uppercase tracking-wider text-muted-foreground">Promotion</div>
             <div className="w-24 text-xs font-medium uppercase tracking-wider text-muted-foreground">Statut</div>
+            <div className="w-20 text-xs font-medium uppercase tracking-wider text-muted-foreground text-right">
+              Actions
+            </div>
           </div>
 
           {/* Rows */}
@@ -135,14 +160,42 @@ function EtudiantsContent() {
                     {e.actif ? "Actif" : "Inactif"}
                   </span>
                 </div>
+                <div className="w-20 flex items-center justify-end gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => setEditingEtudiant(e)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-destructive hover:text-destructive"
+                    onClick={() => handleDelete(e)}
+                    disabled={deletingId === e.id}
+                  >
+                    {deletingId === e.id ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Modal */}
+      {/* Modals */}
       <CreateEtudiantModal open={showCreateModal} onOpenChange={setShowCreateModal} />
+      <EditEtudiantModal
+        open={!!editingEtudiant}
+        onOpenChange={(open) => !open && setEditingEtudiant(null)}
+        etudiant={editingEtudiant}
+      />
     </div>
   )
 }
