@@ -64,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         router.push('/dashboard/formateur')
         break
       case 'ETUDIANT':
-        router.push('/dashboard/etudiant')
+        router.push('/etudiant')
         break
       default:
         router.push('/dashboard')
